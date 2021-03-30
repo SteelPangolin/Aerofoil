@@ -281,8 +281,6 @@ if(CMAKE_HOST_UNIX)
 	add_executable(AerofoilX
 		AerofoilPortable/GpSystemServices_POSIX.cpp
 		AerofoilPortable/GpThreadEvent_Cpp11.cpp
-		AerofoilPortable/GpFiber_Thread.cpp
-		AerofoilPortable/GpFiberStarter_Thread.cpp
 		AerofoilSDL/GpAudioDriver_SDL2.cpp
 		AerofoilSDL/GpDisplayDriver_SDL_GL2.cpp
 		AerofoilSDL/GpInputDriver_SDL_Gamepad.cpp
