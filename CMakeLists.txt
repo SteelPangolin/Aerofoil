@@ -4,6 +4,9 @@ project (Aerofoil)
 
 message(${CMAKE_BINARY_DIR})
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(SDL2 REQUIRED)
 
 add_definitions(-DGP_DEBUG_CONFIG=0)
