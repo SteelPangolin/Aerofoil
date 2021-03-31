@@ -9,8 +9,8 @@
 
 #include "PLDrivers.h"
 
-#include "SDL2/SDL.h"
-#include "SDL2/SDL_rwops.h"
+#include "SDL.h"
+#include "SDL_rwops.h"
 
 #include <string>
 #include <vector>

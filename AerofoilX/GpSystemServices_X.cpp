@@ -2,7 +2,7 @@
 
 #include "IGpClipboardContents.h"
 #include "IGpThreadEvent.h"
-#include "SDL2/SDL.h"
+#include "SDL.h"
 
 #include <time.h>
 #include <unistd.h>
