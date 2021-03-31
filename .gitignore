@@ -39,6 +39,7 @@ ReleasePackageInstaller/bin/*
 ReleasePackageInstaller/AerofoilPackageDefs.wxi
 ReleasePackageInstaller/AerofoilPackageVersion.wxi
 build/*
+Debug/*
 packages/*
 !SDL2-2.0.12/lib/x64/*
 CMakeCache.txt
