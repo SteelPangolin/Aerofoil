@@ -22,7 +22,7 @@
 
 #include "UTF8.h"
 
-#ifdef __CYGWIN__
+#if defined(__CYGWIN__) || defined(__APPLE__)
 typedef off_t off64_t;
 #define fstat64 fstat
 #define fseek64 fseek
