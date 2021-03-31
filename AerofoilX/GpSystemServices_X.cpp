@@ -6,6 +6,7 @@
 
 #include <time.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <string>
 
 struct GpSystemServices_X_ThreadStartParams
