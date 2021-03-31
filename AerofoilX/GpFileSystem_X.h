@@ -1,6 +1,7 @@
 #pragma once
 
 #include "IGpFileSystem.h"
+#include "IGpThreadRelay.h"
 
 #include "GpCoreDefs.h"
 
@@ -26,7 +27,7 @@ public:
 	bool ValidateFilePath(const char *path, size_t pathLen) const override;
 	bool ValidateFilePathUnicodeChar(uint32_t ch) const override;
 
-	void SetMainThreadRelay(IGpThreadRelay *relay) override;
+	void SetMainThreadRelay(IGpThreadRelay *relay);
 	void SetDelayCallback(DelayCallback_t delayCallback) override;
 
 	static GpFileSystem_X *GetInstance();
