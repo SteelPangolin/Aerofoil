@@ -1,6 +1,5 @@
 #include "GpInputDriver_SDL_Gamepad.h"
 #include "GpVOSEvent.h"
-#include "GpWindows.h"
 #include "IGpVOSEventQueue.h"
 
 #include "SDL_events.h"
