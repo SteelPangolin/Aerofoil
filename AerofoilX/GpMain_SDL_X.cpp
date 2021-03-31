@@ -1,5 +1,4 @@
 #include "SDL.h"
-#include "SDL_main.h"
 
 #include "GpMain.h"
 #include "GpAudioDriverFactory.h"
@@ -29,7 +28,7 @@ IGpAudioDriver *GpDriver_CreateAudioDriver_SDL(const GpAudioDriverProperties &pr
 IGpInputDriver *GpDriver_CreateInputDriver_SDL2_Gamepad(const GpInputDriverProperties &properties);
 
 
-SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	GpLogDriver_X::Init();
 
