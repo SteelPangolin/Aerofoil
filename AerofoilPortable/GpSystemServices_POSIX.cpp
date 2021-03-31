@@ -44,7 +44,13 @@ IGpThreadEvent *GpSystemServices_POSIX::CreateThreadEvent(bool autoReset, bool s
 
 uint64_t GpSystemServices_POSIX::GetFreeMemoryCosmetic() const
 {
+#ifdef _SC_AVPHYS_PAGES
 	long pages = sysconf(_SC_AVPHYS_PAGES);
 	long pageSize = sysconf(_SC_PAGE_SIZE);
 	return pages * pageSize;
+#else
+    // macOS doesn't define _SC_AVPHYS_PAGES anyway, and this is purely cosmetic.
+    // If desired, implement using FreeBSD/macOS sysctl() and HW_PHYSMEM.
+    return 0;
+#endif
 }
