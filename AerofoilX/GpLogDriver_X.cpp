@@ -49,6 +49,9 @@ void GpLogDriver_X::VPrintf(Category category, const char *fmt, va_list args)
 	case Category_Error:
 		debugTag = "[ERROR] ";
 		break;
+    case Category_Information:
+        debugTag = "[INFO] ";
+        break;
 	};
 
 	if (debugTag[0])
