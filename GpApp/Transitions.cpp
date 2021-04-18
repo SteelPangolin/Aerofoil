@@ -14,6 +14,7 @@
 #include "PLQDraw.h"
 #include "RectUtils.h"
 #include "RandomNumberGenerator.h"
+#include "PLSysCalls.h"
 
 #include <algorithm>
 
@@ -166,6 +167,7 @@ void WipeScreenOn (short direction, Rect *theRect)
 
 		mainWindow->GetDrawSurface()->m_port.SetDirty(PortabilityLayer::QDPortDirtyFlag_Contents);
 
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 		Delay(1, nullptr);
 	}
 }
@@ -229,7 +231,10 @@ void DissolveScreenOn(Rect *theRect)
 
 		graf->m_port.SetDirty(PortabilityLayer::QDPortDirtyFlag_Contents);
 
-		Delay(1, nullptr);
+		{
+			PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+			Delay(1, nullptr);
+		}
 	}
 
 	graf->m_port.SetDirty(PortabilityLayer::QDPortDirtyFlag_Contents);

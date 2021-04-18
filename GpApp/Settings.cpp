@@ -254,7 +254,7 @@ void DoBrainsPrefs (void)
 
 	while (!leaving)
 	{
-		itemHit = prefDlg->ExecuteModal(nullptr, BrainsFilter);
+		itemHit = prefDlg->ExecuteModal(nullptr, PL_FILTER_FUNC(BrainsFilter));
 		switch (itemHit)
 		{
 			case kOkayButton:
@@ -536,7 +536,7 @@ void DoControlPrefs (void)
 	
 	while (!leaving)
 	{
-		itemHit = prefDlg->ExecuteModal(nullptr, ControlFilter);
+		itemHit = prefDlg->ExecuteModal(nullptr, PL_FILTER_FUNC(ControlFilter));
 		switch (itemHit)
 		{
 			case kOkayButton:
@@ -758,7 +758,7 @@ void DoSoundPrefs (void)
 
 	while (!leaving)
 	{
-		itemHit = prefDlg->ExecuteModal(nullptr, SoundFilter);
+		itemHit = prefDlg->ExecuteModal(nullptr, PL_FILTER_FUNC(SoundFilter));
 
 		switch (itemHit)
 		{
@@ -1026,7 +1026,7 @@ void DoDisplayPrefs (void)
 	
 	while (!leaving)
 	{
-		int16_t itemHit = prefDlg->ExecuteModal(nullptr, DisplayFilter);
+		int16_t itemHit = prefDlg->ExecuteModal(nullptr, PL_FILTER_FUNC(DisplayFilter));
 		switch (itemHit)
 		{
 			case kOkayButton:
@@ -1166,6 +1166,8 @@ void SetAllDefaults (void)
 
 void FlashSettingsButton (DrawSurface *surface, short who)
 {
+	PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+
 	#define		kNormalSettingsIcon		1010
 	#define		kInvertedSettingsIcon	1014
 	short		theID;
@@ -1293,7 +1295,7 @@ void DoSettingsMain (void)
 	
 	while (!leaving)
 	{
-		int16_t selectedItem = prefDlg->ExecuteModal(nullptr, PrefsFilter);
+		int16_t selectedItem = prefDlg->ExecuteModal(nullptr, PL_FILTER_FUNC(PrefsFilter));
 
 		switch (selectedItem)
 		{
@@ -1374,3 +1376,8 @@ void ComplainAboutChanges (void)
 	hitWhat = PortabilityLayer::DialogManager::GetInstance()->DisplayAlert(kChangesEffectAlert, nullptr);
 }
 
+PL_IMPLEMENT_FILTER_FUNCTION(BrainsFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(ControlFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(SoundFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(DisplayFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(PrefsFilter)

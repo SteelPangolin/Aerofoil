@@ -188,8 +188,8 @@ namespace PortabilityLayer
 		bool GetWindowChromeInteractionZone(Window *window, const Vec2i &point, RegionID_t &outRegion) const override;
 		void SwapExclusiveWindow(Window *& windowRef) override;
 
-		void FlickerWindowIn(Window *window, int32_t velocity) override;
-		void FlickerWindowOut(Window *window, int32_t velocity) override;
+		void FlickerWindowIn(Window *window, int32_t velocity) GP_ASYNCIFY_PARANOID_OVERRIDE;
+		void FlickerWindowOut(Window *window, int32_t velocity) GP_ASYNCIFY_PARANOID_OVERRIDE;
 
 		void SetWindowDesaturation(Window *window, float desaturationLevel) override;
 
@@ -1324,6 +1324,7 @@ namespace PortabilityLayer
 
 	void WindowManagerImpl::FlickerWindowIn(Window *window, int32_t velocity)
 	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 		m_flickerWindow = static_cast<WindowImpl*>(window);
 
 		int32_t chromeLead = 64;
@@ -1353,6 +1354,7 @@ namespace PortabilityLayer
 
 	void WindowManagerImpl::FlickerWindowOut(Window *window, int32_t velocity)
 	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 		m_flickerWindow = static_cast<WindowImpl*>(window);
 
 		int32_t chromeLead = 64;
@@ -1689,4 +1691,16 @@ namespace PortabilityLayer
 	{
 		return WindowManagerImpl::GetInstance();
 	}
+
+#if GP_ASYNCIFY_PARANOID
+	void WindowManager::FlickerWindowIn(Window *window, int32_t velocity)
+	{
+		static_cast<WindowManagerImpl*>(this)->FlickerWindowIn(window, velocity);
+	}
+
+	void WindowManager::FlickerWindowOut(Window *window, int32_t velocity)
+	{
+		static_cast<WindowManagerImpl*>(this)->FlickerWindowOut(window, velocity);
+	}
+#endif
 }

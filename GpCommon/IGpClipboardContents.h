@@ -1,3 +1,5 @@
+#pragma once
+
 #include "GpClipboardContentsType.h"
 
 #include <stdint.h>

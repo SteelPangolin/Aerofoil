@@ -16,7 +16,7 @@
 #include "RectUtils.h"
 #include "Room.h"
 #include "RubberBands.h"
-
+#include "PLSysCalls.h"
 
 #define kMaxGarbageRects		48
 
@@ -739,6 +739,7 @@ void RenderFrame (void)
 	
 	while (TickCount() < nextFrame)
 	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 		Delay(1, nullptr);
 	}
 	nextFrame = TickCount() + kTicksPerFrame;

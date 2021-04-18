@@ -21,6 +21,7 @@
 #include "RenderedFont.h"
 #include "ResolveCachingColor.h"
 #include "Utilities.h"
+#include "PLSysCalls.h"
 
 
 #define kNumCountDownFrames		16
@@ -489,6 +490,7 @@ void DoDiedGameOver (void)
 				}
 			}
 
+			PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 			Delay(1, nullptr);
 		}
 		while (TickCount() < nextLoop);

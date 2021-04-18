@@ -18,10 +18,13 @@
 #include "DialogManager.h"
 #include "DisplayDeviceManager.h"
 #include "Externs.h"
+#include "IGpLogDriver.h"
 #include "IconLoader.h"
 #include "InputManager.h"
 #include "ResourceManager.h"
 #include "Utilities.h"
+
+#include "PLDrivers.h"
 
 #include <assert.h>
 
@@ -92,6 +95,11 @@ long RandomLong (long range)
 
 void RedAlert (short errorNumber)
 {
+	IGpLogDriver *logger = PLDrivers::GetLogDriver();
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Error, "Red alert error %i", static_cast<int>(errorNumber));
+
 	#define			rDeathAlertID	170		// alert res. ID for death error
 	#define			rErrTitleID		170		// string ID for death error title
 	#define			rErrMssgID		171		// string ID for death error message
@@ -486,6 +494,7 @@ void WaitCommandQReleased (void)
 		if (!theKeys->IsSet(PL_KEY_EITHER_SPECIAL(kControl)) || !theKeys->IsSet(PL_KEY_ASCII('Q')))
 			waiting = false;
 
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 		Delay(1, nullptr);
 	}
 	FlushEvents();

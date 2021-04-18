@@ -249,7 +249,7 @@ void DoHouseInfo (void)
 	
 	while (!leaving)
 	{
-		item = houseInfoDialog->ExecuteModal(nullptr, HouseFilter);
+		item = houseInfoDialog->ExecuteModal(nullptr, PL_FILTER_FUNC(HouseFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -334,3 +334,4 @@ void HowToZeroScores (void)
 
 #endif
 
+PL_IMPLEMENT_FILTER_FUNCTION(HouseFilter)

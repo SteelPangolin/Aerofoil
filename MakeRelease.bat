@@ -4,7 +4,6 @@ mkdir ReleasePkg
 
 mkdir ReleasePkg\Aerofoil
 mkdir ReleasePkg\Aerofoil\Packaged
-mkdir ReleasePkg\Aerofoil\Resources
 mkdir ReleasePkg\Aerofoil\Tools
 
 copy /Y x64\Release\Aerofoil.exe ReleasePkg\Aerofoil
@@ -12,7 +11,6 @@ copy /Y x64\Release\GpAudioDriver_XAudio2.dll ReleasePkg\Aerofoil
 copy /Y x64\Release\xaudio2_9redist.dll ReleasePkg\Aerofoil
 copy /Y x64\Release\GpDisplayDriver_D3D11.dll ReleasePkg\Aerofoil
 copy /Y x64\Release\GpInputDriver_XInput.dll ReleasePkg\Aerofoil
-copy /Y x64\Release\FreeType.dll ReleasePkg\Aerofoil
 copy /Y x64\Release\GpApp.dll ReleasePkg\Aerofoil
 
 copy /Y x64\Release\flattenmov.exe ReleasePkg\Aerofoil\Tools
@@ -29,9 +27,7 @@ mkdir ReleasePkg\PDBs
 copy /Y x64\Release\Aerofoil.pdb ReleasePkg\PDBs
 copy /Y x64\Release\GpAudioDriver_XAudio2.pdb ReleasePkg\PDBs
 copy /Y x64\Release\GpDisplayDriver_D3D11.pdb ReleasePkg\PDBs
-copy /Y x64\Release\GpFontHandler_FreeType2.pdb ReleasePkg\PDBs
 copy /Y x64\Release\GpInputDriver_XInput.pdb ReleasePkg\PDBs
-copy /Y x64\Release\FreeType.pdb ReleasePkg\PDBs
 copy /Y x64\Release\GpApp.pdb ReleasePkg\PDBs
 
 copy /Y x64\Release\flattenmov.pdb ReleasePkg\PDBs
@@ -44,7 +40,6 @@ copy /Y x64\Release\gpr2gpa.pdb ReleasePkg\PDBs
 copy /Y x64\Release\unpacktool.pdb ReleasePkg\PDBs
 
 xcopy /I /E /Y /K Packaged ReleasePkg\Aerofoil\Packaged
-xcopy /I /E /Y /K Resources ReleasePkg\Aerofoil\Resources
 xcopy /I /E /Y /K Documentation ReleasePkg\Aerofoil\Documentation
 
 attrib +R Packaged\Houses\*

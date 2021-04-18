@@ -29,6 +29,9 @@
 #include <vector>
 #include <algorithm>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #pragma push_macro("LoadCursor")
 #ifdef LoadCursor
@@ -215,6 +218,7 @@ struct GpGLFunctions
 
 static void CheckGLError(const GpGLFunctions &gl, IGpLogDriver *logger)
 {
+#if GP_DEBUG_CONFIG
 	GLenum errorCode = gl.GetError();
 	if (errorCode != 0)
 	{
@@ -223,6 +227,7 @@ static void CheckGLError(const GpGLFunctions &gl, IGpLogDriver *logger)
 	}
 
 	assert(errorCode == 0);
+#endif
 }
 
 class GpGLObject
@@ -730,18 +735,18 @@ public:
 	explicit GpDisplayDriver_SDL_GL2(const GpDisplayDriverProperties &properties);
 	~GpDisplayDriver_SDL_GL2();
 
-	bool Init() override;
-	void ServeTicks(int tickCount) override;
+	bool Init() GP_ASYNCIFY_PARANOID_OVERRIDE;
+	void ServeTicks(int tickCount) GP_ASYNCIFY_PARANOID_OVERRIDE;
 	void ForceSync() override;
-	void Shutdown() override;
+	void Shutdown() GP_ASYNCIFY_PARANOID_OVERRIDE;
 
 	void TranslateSDLMessage(const SDL_Event *msg, IGpVOSEventQueue *eventQueue, float pixelScaleX, float pixelScaleY, bool obstructiveTextInput);
 
 	void GetInitialDisplayResolution(unsigned int *width, unsigned int *height) override;
 	IGpDisplayDriverSurface *CreateSurface(size_t width, size_t height, size_t pitch, GpPixelFormat_t pixelFormat, SurfaceInvalidateCallback_t invalidateCallback, void *invalidateContext) override;
 	void DrawSurface(IGpDisplayDriverSurface *surface, int32_t x, int32_t y, size_t width, size_t height, const GpDisplayDriverSurfaceEffects *effects) override;
-	IGpCursor *CreateBWCursor(size_t width, size_t height, const void *pixelData, const void *maskData, size_t hotSpotX, size_t hotSpotY) override;
-	IGpCursor *CreateColorCursor(size_t width, size_t height, const void *pixelDataRGBA, size_t hotSpotX, size_t hotSpotY) override;
+	IGpCursor *CreateBWCursor(size_t width, size_t height, const void *pixelData, const void *maskData, size_t hotSpotX, size_t hotSpotY) GP_ASYNCIFY_PARANOID_OVERRIDE;
+	IGpCursor *CreateColorCursor(size_t width, size_t height, const void *pixelDataRGBA, size_t hotSpotX, size_t hotSpotY) GP_ASYNCIFY_PARANOID_OVERRIDE;
 	void SetCursor(IGpCursor *cursor) override;
 	void SetStandardCursor(EGpStandardCursor_t standardCursor) override;
 	void UpdatePalette(const void *paletteData) override;
@@ -1614,7 +1619,7 @@ static void PostTouchEvent(IGpVOSEventQueue *eventQueue, GpTouchEventType_t even
 
 static bool IdentifyVKey(const SDL_KeyboardEvent *keyEvt, GpKeyIDSubset_t &outSubset, GpKeyboardInputEvent::KeyUnion &outKey)
 {
-	SDL_KeyCode keyCode = static_cast<SDL_KeyCode>(keyEvt->keysym.sym);
+	SDL_Keycode keyCode = static_cast<SDL_Keycode>(keyEvt->keysym.sym);
 
 	switch (keyCode)
 	{
@@ -3091,6 +3096,10 @@ bool GpDisplayDriver_SDL_GL2::SyncRender()
 
 	SDL_GL_SwapWindow(m_window);
 
+#ifdef __EMSCRIPTEN__
+	emscripten_sleep(1);
+#endif
+
 	std::chrono::time_point<std::chrono::high_resolution_clock>::duration syncTime = std::chrono::high_resolution_clock::now().time_since_epoch();
 	const intmax_t periodNum = std::chrono::high_resolution_clock::period::num;
 	const intmax_t periodDen = std::chrono::high_resolution_clock::period::den;
@@ -3214,5 +3223,34 @@ T *GpGLObjectImpl<T>::Create(GpDisplayDriver_SDL_GL2 *driver)
 
 	return obj;
 }
+
+#if GP_ASYNCIFY_PARANOID
+bool IGpDisplayDriver::Init()
+{
+	return static_cast<GpDisplayDriver_SDL_GL2*>(this)->Init();
+}
+
+void IGpDisplayDriver::ServeTicks(int tickCount)
+{
+	static_cast<GpDisplayDriver_SDL_GL2*>(this)->ServeTicks(tickCount);
+}
+
+void IGpDisplayDriver::Shutdown()
+{
+	static_cast<GpDisplayDriver_SDL_GL2*>(this)->Shutdown();
+}
+
+IGpCursor *IGpDisplayDriver::CreateBWCursor(size_t width, size_t height, const void *pixelData, const void *maskData, size_t hotSpotX, size_t hotSpotY)
+{
+	return static_cast<GpDisplayDriver_SDL_GL2*>(this)->CreateBWCursor(width, height, pixelData, maskData, hotSpotX, hotSpotY);
+}
+
+IGpCursor *IGpDisplayDriver::CreateColorCursor(size_t width, size_t height, const void *pixelDataRGBA, size_t hotSpotX, size_t hotSpotY)
+{
+	return static_cast<GpDisplayDriver_SDL_GL2*>(this)->CreateColorCursor(width, height, pixelDataRGBA, hotSpotX, hotSpotY);
+}
+
+#endif
+
 
 #pragma pop_macro("LoadCursor")

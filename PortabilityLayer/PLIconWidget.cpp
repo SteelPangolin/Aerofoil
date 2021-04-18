@@ -9,7 +9,7 @@
 namespace PortabilityLayer
 {
 	IconWidget::IconWidget(const WidgetBasicState &state)
-		: WidgetSpec<IconWidget>(state)
+		: WidgetSpec<IconWidget, WidgetTypes::kIcon>(state)
 	{
 	}
 
@@ -58,4 +58,11 @@ namespace PortabilityLayer
 		else
 			return WidgetHandleStates::kIgnored;
 	}
+
+	int16_t IconWidget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return DefaultCapture(captureContext, pos, callback);
+	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kIcon, PortabilityLayer::IconWidget)

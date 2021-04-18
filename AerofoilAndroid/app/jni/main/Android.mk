@@ -24,7 +24,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_SHARED_LIBRARIES := SDL2
 
-LOCAL_STATIC_LIBRARIES := GpShell GpFontHandler_FreeType2 AerofoilPortable AerofoilSDL GpApp
+LOCAL_STATIC_LIBRARIES := GpShell AerofoilPortable AerofoilSDL GpApp
 
 LOCAL_LDLIBS := -lGLESv1_CM -lGLESv2 -llog
 

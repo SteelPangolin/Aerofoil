@@ -21,6 +21,7 @@
 #include "Utilities.h"
 #include "WindowDef.h"
 #include "WindowManager.h"
+#include "PLSysCalls.h"
 
 
 #define kBannerPageTopPICT		1993
@@ -179,11 +180,13 @@ void BringUpBanner (void)
 			(BitMap *)*GetGWorldPixMap(workSrcMap), 
 			&wholePage, &wholePage, srcCopy);
 
-	
-	if (demoGoing)
-		WaitForInputEvent(4);
-	else
-		WaitForInputEvent(15);
+	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+		if (demoGoing)
+			WaitForInputEvent(4);
+		else
+			WaitForInputEvent(15);
+	}
 	
 //	if (quickerTransitions)
 //		DissBitsChunky(&justRoomsRect);
@@ -237,8 +240,11 @@ void DisplayStarsRemaining(void)
 	if (doZooms)
 		wm->FlickerWindowIn(starsWindow, 32);
 
-	DelayTicks(60);
-	WaitForInputEvent(30);
+	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+		DelayTicks(60);
+		WaitForInputEvent(30);
+	}
 
 	if (doZooms)
 		wm->FlickerWindowOut(starsWindow, 32);

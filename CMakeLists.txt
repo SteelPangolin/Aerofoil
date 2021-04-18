@@ -15,53 +15,6 @@ add_library(stb STATIC
 	stb/stb_image_write.c
 	)
 
-
-add_library(FreeType STATIC
-	FreeType/freetype/src/base/ftbase.c
-	FreeType/freetype/src/base/ftbitmap.c
-	FreeType/freetype/src/base/ftdebug.c
-	FreeType/freetype/src/base/ftinit.c
-	FreeType/freetype/src/base/ftsystem.c
-	FreeType/freetype/src/winfonts/winfnt.c
-	FreeType/freetype/src/autofit/autofit.c
-	FreeType/freetype/src/bdf/bdf.c
-	FreeType/freetype/src/cff/cff.c
-	FreeType/freetype/src/gzip/ftgzip.c
-	FreeType/freetype/src/lzw/ftlzw.c
-	FreeType/freetype/src/pcf/pcf.c
-	FreeType/freetype/src/pfr/pfr.c
-	FreeType/freetype/src/psaux/psaux.c
-	FreeType/freetype/src/pshinter/pshinter.c
-	FreeType/freetype/src/psnames/psnames.c
-	FreeType/freetype/src/raster/raster.c
-	FreeType/freetype/src/sfnt/sfnt.c
-	FreeType/freetype/src/smooth/smooth.c
-	FreeType/freetype/src/truetype/truetype.c
-	FreeType/freetype/src/type1/type1.c
-	FreeType/freetype/src/cid/type1cid.c
-	FreeType/freetype/src/type42/type42.c
-	)
-
-target_compile_options(FreeType PRIVATE -ansi)
-target_compile_definitions(FreeType PRIVATE -DFT2_BUILD_LIBRARY)
-
-target_include_directories(FreeType PRIVATE
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/FreeType/freetype/include>
-	)
-
-add_library(GpFontHandler_FreeType2 STATIC
-		GpFontHandler_FreeType2/GpFontHandler_FreeType2.cpp
-	)
-
-target_include_directories(GpFontHandler_FreeType2 PRIVATE
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/GpCommon>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Common>
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/FreeType/freetype/include>
-	)
-
-target_link_libraries(GpFontHandler_FreeType2 FreeType)
-
-
 add_library(zlib STATIC
 	zlib/adler32.c
 	zlib/crc32.c
@@ -308,7 +261,7 @@ if(CMAKE_HOST_UNIX)
 		${SDL2_INCLUDE_DIRS}
 		)
 
-	target_link_libraries(AerofoilX ${SDL2_LIBRARIES} GpApp GpShell GpFontHandler_FreeType2)
+	target_link_libraries(AerofoilX ${SDL2_LIBRARIES} GpApp GpShell)
 endif()
 
 

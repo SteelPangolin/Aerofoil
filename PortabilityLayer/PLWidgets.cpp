@@ -17,14 +17,14 @@ namespace PortabilityLayer
 	{
 	}
 
-	WidgetHandleState_t Widget::ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
+	WidgetHandleState_t Widget::DefaultProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
 	{
 		(void)evt;
 
 		return WidgetHandleStates::kIgnored;
 	}
 
-	int16_t Widget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	int16_t Widget::DefaultCapture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
 	{
 		return 0;
 	}
@@ -33,6 +33,68 @@ namespace PortabilityLayer
 	{
 		(void)surface;
 	}
+
+#if GP_ASYNCIFY_PARANOID
+	WidgetHandleState_t Widget::ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
+	{
+		switch (this->GetWidgetType())
+		{
+		case WidgetTypes::kButton:
+			return DispatchDynProcessEvent<WidgetTypes::kButton>(this, captureContext, evt);
+		case WidgetTypes::kPopupMenu:
+			return DispatchDynProcessEvent<WidgetTypes::kPopupMenu>(this, captureContext, evt);
+		case WidgetTypes::kEditbox:
+			return DispatchDynProcessEvent<WidgetTypes::kEditbox>(this, captureContext, evt);
+		case WidgetTypes::kIcon:
+			return DispatchDynProcessEvent<WidgetTypes::kIcon>(this, captureContext, evt);
+		case WidgetTypes::kImage:
+			return DispatchDynProcessEvent<WidgetTypes::kImage>(this, captureContext, evt);
+		case WidgetTypes::kInvisible:
+			return DispatchDynProcessEvent<WidgetTypes::kInvisible>(this, captureContext, evt);
+		case WidgetTypes::kLabel:
+			return DispatchDynProcessEvent<WidgetTypes::kLabel>(this, captureContext, evt);
+		case WidgetTypes::kScrollBar:
+			return DispatchDynProcessEvent<WidgetTypes::kScrollBar>(this, captureContext, evt);
+		default:
+			return WidgetHandleStates::kIgnored;
+		}
+	}
+
+	int16_t Widget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		switch (this->GetWidgetType())
+		{
+		case WidgetTypes::kButton:
+			return DispatchDynCapture<WidgetTypes::kButton>(this, captureContext, pos, callback);
+		case WidgetTypes::kPopupMenu:
+			return DispatchDynCapture<WidgetTypes::kPopupMenu>(this, captureContext, pos, callback);
+		case WidgetTypes::kEditbox:
+			return DispatchDynCapture<WidgetTypes::kEditbox>(this, captureContext, pos, callback);
+		case WidgetTypes::kIcon:
+			return DispatchDynCapture<WidgetTypes::kIcon>(this, captureContext, pos, callback);
+		case WidgetTypes::kImage:
+			return DispatchDynCapture<WidgetTypes::kImage>(this, captureContext, pos, callback);
+		case WidgetTypes::kInvisible:
+			return DispatchDynCapture<WidgetTypes::kInvisible>(this, captureContext, pos, callback);
+		case WidgetTypes::kLabel:
+			return DispatchDynCapture<WidgetTypes::kLabel>(this, captureContext, pos, callback);
+		case WidgetTypes::kScrollBar:
+			return DispatchDynCapture<WidgetTypes::kScrollBar>(this, captureContext, pos, callback);
+		default:
+			return -1;
+		}
+	}
+#else
+	WidgetHandleState_t Widget::ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
+	{
+		return this->DefaultProcessEvent(captureContext, evt);
+	}
+
+	int16_t Widget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return this->DefaultCapture(captureContext, pos, callback);
+	}
+#endif
 
 	void Widget::SetMin(int32_t v)
 	{

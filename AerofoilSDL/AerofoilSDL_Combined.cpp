@@ -1,0 +1,8 @@
+#include "GpAudioDriver_SDL2.cpp"
+#include "GpDisplayDriver_SDL_GL2.cpp"
+#include "GpInputDriver_SDL_Gamepad.cpp"
+#include "ShaderCode/CopyQuadP.cpp"
+#include "ShaderCode/DrawQuadPaletteP.cpp"
+#include "ShaderCode/DrawQuad32P.cpp"
+#include "ShaderCode/DrawQuadV.cpp"
+#include "ShaderCode/ScaleQuadP.cpp"

@@ -25,7 +25,47 @@ namespace PortabilityLayer
 
 	typedef WidgetHandleStates::WidgetHandleState WidgetHandleState_t;
 
-	typedef void (*WidgetUpdateCallback_t)(void *captureContext, Widget *control, int part);
+	namespace WidgetTypes
+	{
+		enum WidgetType
+		{
+			kButton,
+			kPopupMenu,
+			kEditbox,
+			kIcon,
+			kImage,
+			kInvisible,
+			kLabel,
+			kScrollBar,
+		};
+	}
+
+	typedef WidgetTypes::WidgetType WidgetType_t;
+
+	typedef void(*WidgetUpdateCallback_t)(void *captureContext, Widget *control, int part);
+
+#if GP_ASYNCIFY_PARANOID
+	template<WidgetType_t TWidgetType>
+	WidgetHandleState_t DispatchDynProcessEvent(Widget *widget, void *captureContext, const TimeTaggedVOSEvent &evt);
+
+	template<WidgetType_t TWidgetType>
+	int16_t DispatchDynCapture(Widget *widget, void *captureContext, const Point &pos, WidgetUpdateCallback_t callback);
+
+#define PL_IMPLEMENT_WIDGET_TYPE(typeID, type)	\
+	template<>	\
+	PortabilityLayer::WidgetHandleState_t PortabilityLayer::DispatchDynProcessEvent<typeID>(Widget *widget, void *captureContext, const TimeTaggedVOSEvent &evt)	\
+	{	\
+		return static_cast<type*>(widget)->ProcessEvent(captureContext, evt);	\
+	}	\
+	template<>	\
+	int16_t PortabilityLayer::DispatchDynCapture<typeID>(Widget *widget, void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)	\
+	{	\
+		return static_cast<type*>(widget)->Capture(captureContext, pos, callback);	\
+	}
+
+#else
+#define PL_IMPLEMENT_WIDGET_TYPE(typeID, type)
+#endif
 
 	struct WidgetBasicState
 	{
@@ -48,9 +88,12 @@ namespace PortabilityLayer
 	{
 	public:
 		virtual bool Init(const WidgetBasicState &state, const void *additionalData) = 0;
+		virtual WidgetType_t GetWidgetType() const = 0;
+
+		GP_ASYNCIFY_PARANOID_VIRTUAL WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) GP_ASYNCIFY_PARANOID_PURE;
+		GP_ASYNCIFY_PARANOID_VIRTUAL int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) GP_ASYNCIFY_PARANOID_PURE;
+
 		virtual void Destroy() = 0;
-		virtual WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt);
-		virtual int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback);
 		virtual void DrawControl(DrawSurface *surface);
 
 		virtual void SetMin(int32_t v);
@@ -100,6 +143,9 @@ namespace PortabilityLayer
 		static void BaseRelease(void *storage);
 		static void *BaseAlloc(size_t sz);
 
+		WidgetHandleState_t DefaultProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt);
+		int16_t DefaultCapture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback);
+
 		Window *m_window;
 		Rect m_rect;
 		uint32_t m_referenceConstant;
@@ -115,7 +161,7 @@ namespace PortabilityLayer
 
 namespace PortabilityLayer
 {
-	template<class T>
+	template<class T, WidgetType_t TWidgetType>
 	class WidgetSpec : public Widget
 	{
 	public:
@@ -130,6 +176,11 @@ namespace PortabilityLayer
 			Widget::BaseRelease(static_cast<T*>(this));
 		}
 
+		WidgetType_t GetWidgetType() const override
+		{
+			return TWidgetType;
+		}
+
 		static T *Create(const WidgetBasicState &state, const void *additionalData)
 		{
 			void *storage = Widget::BaseAlloc(sizeof(T));
@@ -139,7 +190,7 @@ namespace PortabilityLayer
 			T *widgetT = new (storage) T(state);
 
 			// Conversion check
-			WidgetSpec<T> *downcastWidget = widgetT;
+			WidgetSpec<T, TWidgetType> *downcastWidget = widgetT;
 			(void)downcastWidget;
 
 			Widget *widget = widgetT;

@@ -35,40 +35,6 @@ namespace PortabilityLayer
 		return minIndexInclusive;
 	}
 
-
-	bool AntiAliasTable::LoadFromCache(const char *cacheFileName)
-	{
-		GpIOStream *stream = PLDrivers::GetFileSystem()->OpenFile(PortabilityLayer::VirtualDirectories::kFontCache, cacheFileName, false, GpFileCreationDispositions::kOpenExisting);
-		if (!stream)
-			return false;
-
-		BEUInt32_t cacheVersion;
-		if (stream->Read(&cacheVersion, sizeof(cacheVersion)) != sizeof(cacheVersion) || cacheVersion != kCacheVersion)
-		{
-			stream->Close();
-			return false;
-		}
-
-		const size_t readSize = sizeof(m_aaTranslate);
-		const bool readOK = (stream->Read(m_aaTranslate, readSize) == readSize);
-		stream->Close();
-
-		return readOK;
-	}
-
-	void AntiAliasTable::SaveToCache(const char *cacheFileName)
-	{
-		GpIOStream *stream = PLDrivers::GetFileSystem()->OpenFile(PortabilityLayer::VirtualDirectories::kFontCache, cacheFileName, true, GpFileCreationDispositions::kCreateOrOverwrite);
-		if (!stream)
-			return;
-
-		BEUInt32_t cacheVersion(static_cast<uint32_t>(kCacheVersion));
-		stream->Write(&cacheVersion, sizeof(cacheVersion));
-
-		stream->Write(m_aaTranslate, sizeof(m_aaTranslate));
-		stream->Close();
-	}
-
 	void AntiAliasTable::GenerateForPaletteFast(const RGBAColor &baseColorRef)
 	{
 		const RGBAColor baseColor = baseColorRef;
@@ -90,15 +56,21 @@ namespace PortabilityLayer
 			rgbScaleTree[i] = (rgbScaleLinear[i] + rgbScaleLinear[i + 1]) / 2;
 
 		uint32_t toneScaleLinear[16];
+		uint32_t grayScaleLinear[16];
 		for (unsigned int i = 0; i < 16; i++)
 		{
 			unsigned int upscaled = i * 17;
 			toneScaleLinear[i] = upscaled * upscaled * (kDivisions - 1);
+			grayScaleLinear[i] = toneScaleLinear[i] * 3;
 		}
 
 		uint32_t toneScaleTree[15];
+		uint32_t grayScaleTree[15];
 		for (unsigned int i = 0; i < 15; i++)
+		{
 			toneScaleTree[i] = (toneScaleLinear[i] + toneScaleLinear[i + 1]) / 2;
+			grayScaleTree[i] = (grayScaleLinear[i] + grayScaleLinear[i + 1]) / 2;
+		}
 
 		for (int i = 0; i < 3; i++)
 			baseChLinear[i] = baseCh[i] * baseCh[i];
@@ -126,15 +98,18 @@ namespace PortabilityLayer
 				
 				unsigned int toneIndexes[3];
 				unsigned int rgbIndexes[3];
+				unsigned int grayScaleIndex;
 
 				for (int i = 0; i < 3; i++)
 				{
 					toneIndexes[i] = BinTreeQuantize(toneScaleTree, toneScaleLinear, newChLinear[i]);
 					rgbIndexes[i] = BinTreeQuantize(rgbScaleTree, rgbScaleLinear, newChLinear[i]);
 				}
+				grayScaleIndex = BinTreeQuantize(grayScaleTree, grayScaleLinear, newChLinear[0] + newChLinear[1] + newChLinear[2]);
 
 				uint64_t toneZeroError[3];
 				uint64_t toneQuantizedError[3];
+				uint64_t grayError = 0;
 				uint64_t rgbError = 0;
 				for (int i = 0; i < 3; i++)
 				{
@@ -144,15 +119,18 @@ namespace PortabilityLayer
 					int32_t toneDelta = static_cast<int32_t>(toneScaleLinear[toneIndexes[i]]) - static_cast<int32_t>(newChLinear[i]);
 					toneQuantizedError[i] = static_cast<uint64_t>(static_cast<int64_t>(toneDelta) * static_cast<int64_t>(toneDelta));
 
-					int32_t rgbDelta = static_cast<int32_t>(rgbScaleLinear[toneIndexes[i]]) - static_cast<int32_t>(newChLinear[i]);
-					rgbError += static_cast<uint64_t>(static_cast<int64_t>(toneDelta) * static_cast<int64_t>(toneDelta));
+					int32_t rgbDelta = static_cast<int32_t>(rgbScaleLinear[rgbIndexes[i]]) - static_cast<int32_t>(newChLinear[i]);
+					rgbError += static_cast<uint64_t>(static_cast<int64_t>(rgbDelta) * static_cast<int64_t>(rgbDelta));
+
+					int32_t grayDelta = static_cast<int32_t>(toneScaleLinear[grayScaleIndex]) - static_cast<int32_t>(newChLinear[i]);
+					grayError += static_cast<uint64_t>(static_cast<int64_t>(grayDelta) * static_cast<int64_t>(grayDelta));
 				}
 
 				uint64_t possibleErrors[5];
 				possibleErrors[0] = toneQuantizedError[0] + toneZeroError[1] + toneZeroError[2];
 				possibleErrors[1] = toneZeroError[0] + toneQuantizedError[1] + toneZeroError[2];
 				possibleErrors[2] = toneZeroError[0] + toneZeroError[1] + toneQuantizedError[2];
-				possibleErrors[3] = toneQuantizedError[0] + toneQuantizedError[1] + toneQuantizedError[2];
+				possibleErrors[3] = grayError;
 				possibleErrors[4] = rgbError;
 
 				int bestErrorIndex = 0;
@@ -170,7 +148,7 @@ namespace PortabilityLayer
 				else if (bestErrorIndex == 2)
 					bestColor = StandardPalette::GetInstance()->MapColorAnalyticTruncated(0, 0, toneIndexes[2]);
 				else if (bestErrorIndex == 3)
-					bestColor = StandardPalette::GetInstance()->MapColorAnalyticTruncated(toneIndexes[0], toneIndexes[1], toneIndexes[2]);
+					bestColor = StandardPalette::GetInstance()->MapColorAnalyticTruncated(grayScaleIndex, grayScaleIndex, grayScaleIndex);
 				else //if (bestErrorIndex == 4)
 					bestColor = StandardPalette::GetInstance()->MapColorAnalyticTruncated(rgbIndexes[0] * 3, rgbIndexes[1] * 3, rgbIndexes[2] * 3);
 
@@ -179,17 +157,8 @@ namespace PortabilityLayer
 		}
 	}
 
-#if 0
-	void AntiAliasTable::GenerateForPalette(const RGBAColor &baseColorRef, const RGBAColor *colors, size_t numColors, bool cacheable)
+	void AntiAliasTable::GenerateForPalette(const RGBAColor &baseColorRef, const RGBAColor *colors, size_t numColors)
 	{
-		char cacheFileName[256];
-		if (cacheable)
-		{
-			sprintf(cacheFileName, "aa_p_%02x%02x%02x%02x.cache", static_cast<int>(baseColorRef.r), static_cast<int>(baseColorRef.g), static_cast<int>(baseColorRef.b), static_cast<int>(baseColorRef.a));
-			if (LoadFromCache(cacheFileName))
-				return;
-		}
-
 		const RGBAColor baseColor = baseColorRef;
 
 		if (numColors > 256)
@@ -248,22 +217,10 @@ namespace PortabilityLayer
 				m_aaTranslate[i][b] = static_cast<uint8_t>(bestColor);
 			}
 		}
-
-		if (cacheable)
-			SaveToCache(cacheFileName);
 	}
-#endif
 
-	void AntiAliasTable::GenerateForSimpleScale(uint8_t colorChannel, bool cacheable)
+	void AntiAliasTable::GenerateForSimpleScale(uint8_t colorChannel)
 	{
-		char cacheFileName[256];
-		if (cacheable)
-		{
-			sprintf(cacheFileName, "aa_t_%02x.cache", static_cast<int>(colorChannel));
-			if (LoadFromCache(cacheFileName))
-				return;
-		}
-
 		const double gamma = 1.8;
 		const double rcpGamma = 1.0 / gamma;
 		const double rcp255 = 1.0 / 255.0;
@@ -284,8 +241,5 @@ namespace PortabilityLayer
 				m_aaTranslate[baseColor][opacity] = static_cast<uint8_t>(floor(blendedColorGammaSpace * 255.0 + 0.5));
 			}
 		}
-
-		if (cacheable)
-			SaveToCache(cacheFileName);
 	}
 }

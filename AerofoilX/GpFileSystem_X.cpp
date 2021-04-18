@@ -202,8 +202,7 @@ bool GpFileSystem_X::ResolvePath(PortabilityLayer::VirtualDirectory_t virtualDir
 }
 
 GpFileSystem_X::GpFileSystem_X()
-	: m_relay(nullptr)
-	, m_delayCallback(nullptr)
+	: m_delayCallback(nullptr)
 {
 }
 
@@ -338,30 +337,6 @@ bool GpFileSystem_X::DeleteFile(PortabilityLayer::VirtualDirectory_t virtualDire
 	return true;
 }
 
-IGpDirectoryCursor *GpFileSystem_X::ScanDirectoryNested(PortabilityLayer::VirtualDirectory_t virtualDirectory, const char *const *paths, size_t numPaths)
-{
-	ScanDirectoryNestedContext ctx;
-	ctx.m_this = this;
-	ctx.m_returnValue = nullptr;
-	ctx.m_virtualDirectory = virtualDirectory;
-	ctx.m_paths = paths;
-	ctx.m_numPaths = numPaths;
-	m_relay->Invoke(ScanDirectoryNestedThunk, &ctx);
-
-	return ctx.m_returnValue;
-}
-
-void GpFileSystem_X::ScanDirectoryNestedThunk(void *context)
-{
-	ScanDirectoryNestedContext *ctx = static_cast<ScanDirectoryNestedContext*>(context);
-	ctx->m_returnValue = ctx->m_this->ScanDirectoryNestedInternal(ctx->m_virtualDirectory, ctx->m_paths, ctx->m_numPaths);
-}
-
-IGpDirectoryCursor *GpFileSystem_X::ScanDirectoryNestedInternal(PortabilityLayer::VirtualDirectory_t virtualDirectory, const char *const *paths, size_t numPaths)
-{
-	return ScanDirectory(virtualDirectory, paths, numPaths);
-}
-
 bool GpFileSystem_X::ValidateFilePath(const char *path, size_t length) const
 {
 	for (size_t i = 0; i < length; i++)
@@ -406,11 +381,6 @@ bool GpFileSystem_X::ValidateFilePathUnicodeChar(uint32_t c) const
 		return true;
 
 	return false;
-}
-
-void GpFileSystem_X::SetMainThreadRelay(IGpThreadRelay *relay)
-{
-	m_relay = relay;
 }
 
 void GpFileSystem_X::SetDelayCallback(DelayCallback_t delayCallback)
@@ -500,7 +470,7 @@ void GpDirectoryCursor_POSIX::Destroy()
 }
 
 
-IGpDirectoryCursor *GpFileSystem_X::ScanDirectory(PortabilityLayer::VirtualDirectory_t virtualDirectory, char const* const* paths, size_t numPaths)
+IGpDirectoryCursor *GpFileSystem_X::ScanDirectoryNested(PortabilityLayer::VirtualDirectory_t virtualDirectory, char const* const* paths, size_t numPaths)
 {
 	std::string resolvedPath;
 	std::vector<std::string> subPaths;

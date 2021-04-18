@@ -176,7 +176,6 @@
   </Target>
   <PropertyGroup>
     <DefineConstants>
-ResourcesDataDir=$(SolutionDir)\Resources;
 DocumentationDataDir=$(SolutionDir)\Documentation;
 HousesDataDir=$(SolutionDir)\Packaged\Houses;
 PackagedDataDir=$(SolutionDir)\Packaged;
@@ -184,15 +183,6 @@ PackagedDataDir=$(SolutionDir)\Packaged;
   </PropertyGroup>
   <Target Name="BeforeBuild">
     <ItemGroup>
-      <HarvestDirectory Include="$(SolutionDir)\Resources">
-        <DirectoryRefId>AEROFOILRESOURCESDIR</DirectoryRefId>
-        <SuppressRootDirectory>true</SuppressRootDirectory>
-        <SuppressCom>true</SuppressCom>
-        <SuppressRegistry>true</SuppressRegistry>
-        <ComponentGroupName>ResourcesComponentGroup</ComponentGroupName>
-        <AutogenerateGuids>true</AutogenerateGuids>
-        <PreprocessorVariable>var.ResourcesDataDir</PreprocessorVariable>
-      </HarvestDirectory>
       <HarvestDirectory Include="$(SolutionDir)\InstallerPackages\DefaultHouses">
         <DirectoryRefId>AEROFOILHOUSESDIR</DirectoryRefId>
         <SuppressRootDirectory>true</SuppressRootDirectory>

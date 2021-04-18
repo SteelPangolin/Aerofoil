@@ -21,7 +21,7 @@ SDrawQuadPixelOutput PSMain(SDrawQuadPixelInput input)
 	int2 pixelCoordinate = int2(floor(input.texCoord.xy));
 	result.color = float4(SamplePixel(int2(floor(input.texCoord.xy))), 1.0);
 	result.color *= constants_Modulation;
-	result.color = ApplyFlicker(pixelCoordinate, constants_FlickerStartThreshold, constants_FlickerEndThreshold, result.color * constants_Modulation);
+	result.color = ApplyFlicker(pixelCoordinate, constants_FlickerStartThreshold, constants_FlickerEndThreshold, result.color);
 	result.color = ApplyDesaturation(constants_Desaturation, result.color);
 	
 	if (result.color.a <= 0.0)

@@ -2016,7 +2016,7 @@ PortabilityLayer::RenderedFont *GetFont(PortabilityLayer::FontPreset_t fontPrese
 	if (familyID == PortabilityLayer::FontFamilyIDs::kCount)
 		return nullptr;
 
-	return fontManager->GetRenderedFontFromFamily(fontManager->GetFont(familyID), size, aa, variationFlags);
+	return fontManager->LoadCachedRenderedFont(familyID, size, aa, variationFlags);
 }
 
 #include "stb_image_write.h"

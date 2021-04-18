@@ -105,6 +105,7 @@
     <ClInclude Include="FontFamily.h" />
     <ClInclude Include="FontFamilyID.h" />
     <ClInclude Include="FontManager.h" />
+    <ClInclude Include="FontPresets.h" />
     <ClInclude Include="FontRenderer.h" />
     <ClInclude Include="GpAppInterface.h" />
     <ClInclude Include="GPArchive.h" />

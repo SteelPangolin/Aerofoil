@@ -137,6 +137,7 @@ GpFileSystem_Win32::GpFileSystem_Win32()
 		m_userSavesDir.append(L"\\");
 		m_logsDir.append(L"\\");
 		m_fontCacheDir.append(L"\\");
+		m_resourcesDir.append(L"\\");
 	}
 
 	DWORD modulePathSize = GetModuleFileNameW(nullptr, m_executablePath, MAX_PATH);
@@ -158,7 +159,7 @@ GpFileSystem_Win32::GpFileSystem_Win32()
 			continue;
 		}
 
-		if (wcscat_s(m_executablePath, L"Resources"))
+		if (wcscat_s(m_executablePath, L"Packaged"))
 		{
 			currentPathLength = 0;
 			break;
@@ -453,9 +454,6 @@ bool GpFileSystem_Win32::ResolvePath(PortabilityLayer::VirtualDirectory_t virtua
 		break;
 	case PortabilityLayer::VirtualDirectories::kLogs:
 		baseDir = m_logsDir.c_str();
-		break;
-	case PortabilityLayer::VirtualDirectories::kFontCache:
-		baseDir = m_fontCacheDir.c_str();
 		break;
 	default:
 		return false;

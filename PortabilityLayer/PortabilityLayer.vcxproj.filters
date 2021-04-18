@@ -432,6 +432,9 @@
     <ClInclude Include="FontFamilyID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FontPresets.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFileStream.cpp">

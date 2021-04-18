@@ -5,7 +5,7 @@
 namespace PortabilityLayer
 {
 	InvisibleWidget::InvisibleWidget(const WidgetBasicState &state)
-		: WidgetSpec<InvisibleWidget>(state)
+		: WidgetSpec<InvisibleWidget, WidgetTypes::kInvisible>(state)
 		, m_clickable(state.m_enabled)
 	{
 	}
@@ -31,4 +31,11 @@ namespace PortabilityLayer
 		else
 			return WidgetHandleStates::kIgnored;
 	}
+
+	int16_t InvisibleWidget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return DefaultCapture(captureContext, pos, callback);
+	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kInvisible, PortabilityLayer::InvisibleWidget)

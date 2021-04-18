@@ -56,9 +56,6 @@
       <Component Id="Aerofoil.exe" Guid="*">
         <File Id="Aerofoil.exe" Source="$(var.Aerofoil.TargetPath)" KeyPath="yes" Checksum="yes" />
       </Component>
-      <Component Id="FreeType.dll" Guid="*">
-        <File Id="FreeType.dll" Source="$(var.FreeType.TargetPath)" KeyPath="yes" Checksum="yes"/>
-      </Component>
       <Component Id="GpApp.dll" Guid="*">
         <File Id="GpApp.dll" Source="$(var.GpApp.TargetPath)" KeyPath="yes" Checksum="yes"/>
       </Component>
@@ -73,9 +70,6 @@
       </Component>
       <Component Id="GpInputDriver_XInput.dll" Guid="*">
         <File Id="GpInputDriver_XInput.dll" Source="$(var.GpInputDriver_XInput.TargetPath)" KeyPath="yes" Checksum="yes"/>
-      </Component>
-      <Component Id="GpFontHandler_FreeType2.dll" Guid="*">
-        <File Id="GpFontHandler_FreeType2.dll" Source="$(var.GpFontHandler_FreeType2.TargetPath)" KeyPath="yes" Checksum="yes"/>
       </Component>
     </DirectoryRef>
 
@@ -155,21 +149,19 @@
 
     <Feature Id="AerofoilApplicationFeature" Title="Glider PRO Game Data" Level="1" Display="expand" ConfigurableDirectory="AEROFOILPRODUCTDIR" Description="!(loc.AerofoilApplicationFeatureDescription)">
       <ComponentRef Id="Aerofoil.exe" />
-      <ComponentRef Id="FreeType.dll" />
       <ComponentRef Id="GpApp.dll" />
       <ComponentRef Id="GpAudioDriver_XAudio2.dll" />
       <ComponentRef Id="xaudio2_9redist.dll" />
       <ComponentRef Id="GpDisplayDriver_D3D11.dll" />
       <ComponentRef Id="GpInputDriver_XInput.dll" />
-      <ComponentRef Id="GpFontHandler_FreeType2.dll" />
       
       <ComponentRef Id="ApplicationResources" />
+      <ComponentRef Id="Fonts" />
 
       <ComponentRef Id="readme.txt" />
 
       <ComponentGroupRef Id="DefaultHousesComponentGroup"/>
-      
-      <ComponentGroupRef Id="ResourcesComponentGroup"/>
+
       <ComponentGroupRef Id="LooseDocumentationComponentGroup"/>
 
       <ComponentRef Id="StartMenuShortcuts" />

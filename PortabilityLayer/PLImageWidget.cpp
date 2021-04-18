@@ -5,7 +5,7 @@
 namespace PortabilityLayer
 {
 	ImageWidget::ImageWidget(const WidgetBasicState &state)
-		: WidgetSpec<ImageWidget>(state)
+		: WidgetSpec<ImageWidget, WidgetTypes::kImage>(state)
 	{
 	}
 
@@ -28,4 +28,16 @@ namespace PortabilityLayer
 		if (m_pict && m_rect.IsValid())
 			surface->DrawPicture(m_pict, m_rect);
 	}
+
+	WidgetHandleState_t ImageWidget::ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
+	{
+		return DefaultProcessEvent(captureContext, evt);
+	}
+
+	int16_t ImageWidget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return DefaultCapture(captureContext, pos, callback);
+	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kImage, PortabilityLayer::ImageWidget)

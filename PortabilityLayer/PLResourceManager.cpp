@@ -184,6 +184,7 @@ namespace PortabilityLayer
 		GpIOStream *fStream = nullptr;
 		ZipFileProxy *proxy = nullptr;
 		bool proxyIsShared = false;
+
 		if (file->OpenResources(fStream, proxy, proxyIsShared) != PLErrors::kNone)
 			return nullptr;
 

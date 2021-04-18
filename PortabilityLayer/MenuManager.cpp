@@ -22,6 +22,7 @@
 #include "PLPasStr.h"
 #include "PLResources.h"
 #include "PLStandardColors.h"
+#include "PLSysCalls.h"
 #include "PLTimeTaggedVOSEvent.h"
 #include "PLQDOffscreen.h"
 
@@ -153,7 +154,7 @@ namespace PortabilityLayer
 		uint16_t GetMenuBarHeight() const override;
 
 		bool FindMenuShortcut(uint16_t &menuID, uint16_t &itemID, uint8_t shortcutChar) override;
-		void MenuSelect(const Vec2i &initialPoint, int16_t *outMenu, uint16_t *outItem) override;
+		void MenuSelect(const Vec2i &initialPoint, int16_t *outMenu, uint16_t *outItem) GP_ASYNCIFY_PARANOID_OVERRIDE;
 		void PopupMenuSelect(const THandle<Menu> &menu, const Vec2i &popupMenuPos, const Vec2i &initialPoint, size_t initialItem, uint16_t *outItem) override;
 
 		void DrawMenuBar() override;
@@ -709,7 +710,13 @@ namespace PortabilityLayer
 		bool canDismiss = false;
 		while (!canDismiss)
 		{
-			if (WaitForEvent(&evt, 1))
+			bool haveEvent = false;
+			{
+				PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+				haveEvent = WaitForEvent(&evt, 1);
+			}
+
+			if (haveEvent)
 			{
 				if (evt.m_vosEvent.m_eventType == GpVOSEventTypes::kMouseInput)
 				{
@@ -1576,4 +1583,11 @@ namespace PortabilityLayer
 	{
 		return MenuManagerImpl::GetInstance();
 	}
+
+#ifdef GP_ASYNCIFY_PARANOID
+	void MenuManager::MenuSelect(const Vec2i &initialPoint, int16_t *outMenu, uint16_t *outItem)
+	{
+		static_cast<MenuManagerImpl*>(this)->MenuSelect(initialPoint, outMenu, outItem);
+	}
+#endif
 }

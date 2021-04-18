@@ -785,7 +785,7 @@ void DoBlowerObjectInfo (short what)
 	{
 		bool redrawMain = false;
 
-		item = infoDial->ExecuteModal(nullptr, BlowerFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(BlowerFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -937,7 +937,7 @@ void DoFurnitureObjectInfo (void)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, FurnitureFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(FurnitureFilter));
 		
 		if (item == kOkayButton)
 			leaving = true;
@@ -997,7 +997,7 @@ void DoCustPictObjectInfo (void)
 	{
 		bool redrawMain = false;
 
-		item = infoDial->ExecuteModal(nullptr, CustPictFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(CustPictFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1106,7 +1106,7 @@ void DoSwitchObjectInfo (void)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, SwitchFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(SwitchFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1231,7 +1231,7 @@ void DoTriggerObjectInfo (void)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, TriggerFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(TriggerFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1371,7 +1371,7 @@ void DoLightObjectInfo (void)
 	while (!leaving)
 	{
 		bool redrawMain = false;
-		item = infoDial->ExecuteModal(nullptr, LightFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(LightFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1465,7 +1465,7 @@ void DoApplianceObjectInfo (short what)
 	while (!leaving)
 	{
 		bool redrawMain = false;
-		item = infoDial->ExecuteModal(nullptr, ApplianceFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(ApplianceFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1585,7 +1585,7 @@ void DoMicrowaveObjectInfo (void)
 	while (!leaving)
 	{
 		bool redrawMain = false;
-		item = infoDial->ExecuteModal(nullptr, MicrowaveFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(MicrowaveFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1695,7 +1695,7 @@ void DoGreaseObjectInfo (void)
 	{
 		bool redrawMain = false;
 
-		item = infoDial->ExecuteModal(nullptr, GreaseFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(GreaseFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1783,7 +1783,7 @@ void DoInvisBonusObjectInfo (void)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, InvisBonusFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(InvisBonusFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -1907,7 +1907,7 @@ void DoTransObjectInfo (short what)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, TransFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(TransFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -2017,7 +2017,7 @@ void DoEnemyObjectInfo (short what)
 	
 	while (!leaving)
 	{
-		item = infoDial->ExecuteModal(nullptr, EnemyFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(EnemyFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -2113,7 +2113,7 @@ void DoFlowerObjectInfo (void)
 	{
 		bool redrawMain = false;
 
-		item = infoDial->ExecuteModal(nullptr, FlowerFilter);
+		item = infoDial->ExecuteModal(nullptr, PL_FILTER_FUNC(FlowerFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -2360,4 +2360,18 @@ void DoObjectInfo (void)
 }
 
 #endif
+
+PL_IMPLEMENT_FILTER_FUNCTION(BlowerFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(FurnitureFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(CustPictFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(SwitchFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(TriggerFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(LightFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(ApplianceFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(MicrowaveFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(GreaseFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(InvisBonusFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(TransFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(EnemyFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(FlowerFilter)
 

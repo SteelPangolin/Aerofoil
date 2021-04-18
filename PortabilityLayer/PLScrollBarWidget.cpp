@@ -9,7 +9,7 @@
 namespace PortabilityLayer
 {
 	ScrollBarWidget::ScrollBarWidget(const WidgetBasicState &state)
-		: WidgetSpec<ScrollBarWidget>(state)
+		: WidgetSpec<ScrollBarWidget, WidgetTypes::kScrollBar>(state)
 		, m_min(0)
 		, m_max(0)
 		, m_gripSize(0)
@@ -260,11 +260,11 @@ namespace PortabilityLayer
 	void ScrollBarWidget::SetState(int16_t state)
 	{
 		if (state < m_min)
-			WidgetSpec<ScrollBarWidget>::SetState(m_min);
+			WidgetSpec<ScrollBarWidget, WidgetTypes::kScrollBar>::SetState(m_min);
 		else if (state > m_max)
-			WidgetSpec<ScrollBarWidget>::SetState(m_max);
+			WidgetSpec<ScrollBarWidget, WidgetTypes::kScrollBar>::SetState(m_max);
 		else
-			WidgetSpec<ScrollBarWidget>::SetState(state);
+			WidgetSpec<ScrollBarWidget, WidgetTypes::kScrollBar>::SetState(state);
 	}
 
 	void ScrollBarWidget::OnStateChanged()
@@ -486,3 +486,5 @@ namespace PortabilityLayer
 		return kControlDownButtonPart;
 	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kScrollBar, PortabilityLayer::ScrollBarWidget)

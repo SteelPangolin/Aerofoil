@@ -7,7 +7,7 @@ namespace PortabilityLayer
 {
 	class PixMapImpl;
 
-	class IconWidget final : public WidgetSpec<IconWidget>
+	class IconWidget final : public WidgetSpec<IconWidget, WidgetTypes::kIcon>
 	{
 	public:
 		IconWidget(const WidgetBasicState &state);
@@ -17,7 +17,8 @@ namespace PortabilityLayer
 
 		void DrawControl(DrawSurface *surface) override;
 
-		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) override;
+		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) GP_ASYNCIFY_PARANOID_OVERRIDE;
+		int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) GP_ASYNCIFY_PARANOID_OVERRIDE;
 
 	private:
 		THandle<PixMapImpl> m_iconImage;

@@ -11,6 +11,7 @@
 #include "PLNumberFormatting.h"
 #include "PLPasStr.h"
 #include "PLStandardColors.h"
+#include "PLSysCalls.h"
 #include "PLWidgets.h"
 #include "QDStandardPalette.h"
 #include "DialogUtils.h"
@@ -341,6 +342,8 @@ void ZoomOutAlertRect (short alertID)
 
 void FlashDialogButton (Dialog *theDialog, short itemNumber)
 {
+	PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+
 	ControlHandle	itemHandle;
 	UInt32			dummyLong;
 

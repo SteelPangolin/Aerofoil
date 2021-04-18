@@ -89,26 +89,6 @@ void SelectDialogItemText(Dialog *dialog, int item, int firstSelChar, int lastSe
 	widget->SetSelection(firstSelChar, lastSelCharExclusive);
 }
 
-ModalFilterUPP NewModalFilterUPP(ModalFilterUPP func)
-{
-	return func;
-}
-
-void ModalDialog(ModalFilterUPP filter, short *item)
-{
-	PL_NotYetImplemented();
-}
-
-void DisposeModalFilterUPP(ModalFilterUPP upp)
-{
-	PL_NotYetImplemented();
-}
-
-void ShowDialogItem(Dialog *dialog, int item)
-{
-	PL_NotYetImplemented();
-}
-
 void HideDialogItem(Dialog *dialog, int item)
 {
 	PortabilityLayer::Widget *widget = dialog->GetItems()[item - 1].GetWidget();

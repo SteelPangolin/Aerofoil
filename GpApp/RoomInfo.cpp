@@ -502,7 +502,7 @@ void DoRoomInfo(void)
 	{
 		bool needRedraw = false;
 
-		item = roomInfoDialog->ExecuteModal(nullptr, RoomFilter);
+		item = roomInfoDialog->ExecuteModal(nullptr, PL_FILTER_FUNC(RoomFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -737,7 +737,7 @@ short ChooseOriginalArt (short was)
 	
 	while (!leaving)
 	{
-		item = theDialog->ExecuteModal(nullptr, OriginalArtFilter);
+		item = theDialog->ExecuteModal(nullptr, PL_FILTER_FUNC(OriginalArtFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -881,3 +881,5 @@ void ComplainAboutPICTNotFound (void)
 }
 #endif
 
+PL_IMPLEMENT_FILTER_FUNCTION(RoomFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(OriginalArtFilter)

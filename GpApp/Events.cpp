@@ -19,6 +19,7 @@
 #include "Rect2i.h"
 #include "WindowManager.h"
 
+#include "PLSysCalls.h"
 
 void HandleMouseEvent (const GpMouseInputEvent &, uint32_t);
 void HandleKeyEvent (const KeyDownStates &keyStates, const GpKeyboardInputEvent &);
@@ -419,7 +420,10 @@ void HandleEvent (void)
 		SelectTool(kSelectTool);
 	}
 
-	itHappened = WaitForEvent(&theEvent, sleep);
+	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+		itHappened = WaitForEvent(&theEvent, sleep);
+	}
 	
 	if (itHappened)
 	{

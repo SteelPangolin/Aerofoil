@@ -1,10 +1,11 @@
 #include "PLButtonWidget.h"
 #include "PLCore.h"
 #include "PLControlDefinitions.h"
-#include "PLRegions.h"
-#include "PLTimeTaggedVOSEvent.h"
-#include "PLStandardColors.h"
 #include "PLQDraw.h"
+#include "PLRegions.h"
+#include "PLStandardColors.h"
+#include "PLSysCalls.h"
+#include "PLTimeTaggedVOSEvent.h"
 #include "FontFamily.h"
 #include "RenderedFont.h"
 #include "GpRenderedFontMetrics.h"
@@ -13,10 +14,10 @@
 
 #include <algorithm>
 
-static const int kLightGray = 238;
-static const int kMidGray = 221;
-static const int kMidDarkGray = 170;
-static const int kDarkGray = 102;
+static const int kButtonLightGray = 238;
+static const int kButtonMidGray = 221;
+static const int kButtonMidDarkGray = 170;
+static const int kButtonDarkGray = 102;
 
 #ifdef CLR
 #undef CLR
@@ -27,28 +28,28 @@ static const int kDarkGray = 102;
 static const PortabilityLayer::RGBAColor gs_buttonTopLeftCornerGraphicPixels[] =
 {
 	CLR(0), CLR(0), CLR(0),
-	CLR(0), CLR(0), CLR(kMidGray),
-	CLR(0), CLR(kMidGray), CLR(255)
+	CLR(0), CLR(0), CLR(kButtonMidGray),
+	CLR(0), CLR(kButtonMidGray), CLR(255)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonTopRightCornerGraphicPixels[] =
 {
 	CLR(0), CLR(0), CLR(0),
-	CLR(kMidGray), CLR(0), CLR(0),
-	CLR(255), CLR(kMidGray), CLR(0)
+	CLR(kButtonMidGray), CLR(0), CLR(0),
+	CLR(255), CLR(kButtonMidGray), CLR(0)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonBottomLeftCornerGraphicPixels[] =
 {
-	CLR(0), CLR(kMidGray), CLR(255),
-	CLR(0), CLR(0), CLR(kMidGray),
+	CLR(0), CLR(kButtonMidGray), CLR(255),
+	CLR(0), CLR(0), CLR(kButtonMidGray),
 	CLR(0), CLR(0), CLR(0)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonBottomRightCornerGraphicPixels[] =
 {
-	CLR(kMidGray), CLR(kDarkGray), CLR(0),
-	CLR(kDarkGray), CLR(0), CLR(0),
+	CLR(kButtonMidGray), CLR(kButtonDarkGray), CLR(0),
+	CLR(kButtonDarkGray), CLR(0), CLR(0),
 	CLR(0), CLR(0), CLR(0)
 };
 
@@ -57,28 +58,28 @@ static const PortabilityLayer::RGBAColor gs_buttonBottomRightCornerGraphicPixels
 static const PortabilityLayer::RGBAColor gs_buttonPressedTopLeftCornerGraphicPixels[] =
 {
 	CLR(0), CLR(0), CLR(0),
-	CLR(0), CLR(0), CLR(kDarkGray),
-	CLR(0), CLR(kDarkGray), CLR(kDarkGray)
+	CLR(0), CLR(0), CLR(kButtonDarkGray),
+	CLR(0), CLR(kButtonDarkGray), CLR(kButtonDarkGray)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonPressedTopRightCornerGraphicPixels[] =
 {
 	CLR(0), CLR(0), CLR(0),
-	CLR(kDarkGray), CLR(0), CLR(0),
-	CLR(kDarkGray), CLR(kDarkGray), CLR(0)
+	CLR(kButtonDarkGray), CLR(0), CLR(0),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(0)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonPressedBottomLeftCornerGraphicPixels[] =
 {
-	CLR(0), CLR(kDarkGray), CLR(kDarkGray),
-	CLR(0), CLR(0), CLR(kDarkGray),
+	CLR(0), CLR(kButtonDarkGray), CLR(kButtonDarkGray),
+	CLR(0), CLR(0), CLR(kButtonDarkGray),
 	CLR(0), CLR(0), CLR(0)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonPressedBottomRightCornerGraphicPixels[] =
 {
-	CLR(kDarkGray), CLR(kDarkGray), CLR(0),
-	CLR(kDarkGray), CLR(0), CLR(0),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(0),
+	CLR(kButtonDarkGray), CLR(0), CLR(0),
 	CLR(0), CLR(0), CLR(0)
 };
 
@@ -86,30 +87,30 @@ static const PortabilityLayer::RGBAColor gs_buttonPressedBottomRightCornerGraphi
 
 static const PortabilityLayer::RGBAColor gs_buttonDisabledTopLeftCornerGraphicPixels[] =
 {
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kDarkGray),
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kLightGray),
-	CLR(kDarkGray), CLR(kLightGray), CLR(kLightGray)
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonLightGray),
+	CLR(kButtonDarkGray), CLR(kButtonLightGray), CLR(kButtonLightGray)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDisabledTopRightCornerGraphicPixels[] =
 {
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kDarkGray),
-	CLR(kLightGray), CLR(kDarkGray), CLR(kDarkGray),
-	CLR(kLightGray), CLR(kLightGray), CLR(kDarkGray)
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray),
+	CLR(kButtonLightGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray),
+	CLR(kButtonLightGray), CLR(kButtonLightGray), CLR(kButtonDarkGray)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDisabledBottomLeftCornerGraphicPixels[] =
 {
-	CLR(kDarkGray), CLR(kLightGray), CLR(kLightGray),
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kLightGray),
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kDarkGray)
+	CLR(kButtonDarkGray), CLR(kButtonLightGray), CLR(kButtonLightGray),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonLightGray),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray)
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDisabledBottomRightCornerGraphicPixels[] =
 {
-	CLR(kLightGray), CLR(kLightGray), CLR(kDarkGray),
-	CLR(kLightGray), CLR(kDarkGray), CLR(kDarkGray),
-	CLR(kDarkGray), CLR(kDarkGray), CLR(kDarkGray)
+	CLR(kButtonLightGray), CLR(kButtonLightGray), CLR(kButtonDarkGray),
+	CLR(kButtonLightGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray),
+	CLR(kButtonDarkGray), CLR(kButtonDarkGray), CLR(kButtonDarkGray)
 };
 
 // Default boundary
@@ -118,35 +119,35 @@ static const PortabilityLayer::RGBAColor gs_buttonDefaultTopLeftCornerGraphicPix
 {
 	CLR(0), CLR(0), CLR(0), CLR(0), CLR(0),
 	CLR(0), CLR(0), CLR(0), CLR(0), CLR(255),
-	CLR(0), CLR(0), CLR(0), CLR(255), CLR(kMidGray),
-	CLR(0), CLR(0), CLR(255), CLR(kMidGray), CLR(kMidGray),
-	CLR(0), CLR(255), CLR(kMidGray), CLR(kMidGray), CLR(0),
+	CLR(0), CLR(0), CLR(0), CLR(255), CLR(kButtonMidGray),
+	CLR(0), CLR(0), CLR(255), CLR(kButtonMidGray), CLR(kButtonMidGray),
+	CLR(0), CLR(255), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(0),
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDefaultTopRightCornerGraphicPixels[] =
 {
 	CLR(0), CLR(0), CLR(0), CLR(0), CLR(0),
 	CLR(255), CLR(0), CLR(0), CLR(0), CLR(0),
-	CLR(kMidGray), CLR(kMidGray), CLR(0), CLR(0), CLR(0),
-	CLR(kMidGray), CLR(kMidGray), CLR(kMidGray), CLR(0), CLR(0),
-	CLR(0), CLR(kMidGray), CLR(kMidGray), CLR(kDarkGray), CLR(0),
+	CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(0), CLR(0), CLR(0),
+	CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(0), CLR(0),
+	CLR(0), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(kButtonDarkGray), CLR(0),
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDefaultBottomLeftCornerGraphicPixels[] =
 {
-	CLR(0), CLR(255), CLR(kMidGray), CLR(kMidGray), CLR(0),
-	CLR(0), CLR(0), CLR(kMidGray), CLR(kMidGray), CLR(kMidGray),
-	CLR(0), CLR(0), CLR(0), CLR(kMidGray), CLR(kMidGray),
-	CLR(0), CLR(0), CLR(0), CLR(0), CLR(kDarkGray),
+	CLR(0), CLR(255), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(0),
+	CLR(0), CLR(0), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(kButtonMidGray),
+	CLR(0), CLR(0), CLR(0), CLR(kButtonMidGray), CLR(kButtonMidGray),
+	CLR(0), CLR(0), CLR(0), CLR(0), CLR(kButtonDarkGray),
 	CLR(0), CLR(0), CLR(0), CLR(0), CLR(0),
 };
 
 static const PortabilityLayer::RGBAColor gs_buttonDefaultBottomRightCornerGraphicPixels[] =
 {
-	CLR(0), CLR(kMidGray), CLR(kMidGray), CLR(kDarkGray), CLR(0),
-	CLR(kMidGray), CLR(kMidGray), CLR(kDarkGray), CLR(0), CLR(0),
-	CLR(kMidGray), CLR(kDarkGray), CLR(0), CLR(0), CLR(0),
-	CLR(kDarkGray), CLR(0), CLR(0), CLR(0), CLR(0),
+	CLR(0), CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(kButtonDarkGray), CLR(0),
+	CLR(kButtonMidGray), CLR(kButtonMidGray), CLR(kButtonDarkGray), CLR(0), CLR(0),
+	CLR(kButtonMidGray), CLR(kButtonDarkGray), CLR(0), CLR(0), CLR(0),
+	CLR(kButtonDarkGray), CLR(0), CLR(0), CLR(0), CLR(0),
 	CLR(0), CLR(0), CLR(0), CLR(0), CLR(0),
 };
 
@@ -154,15 +155,15 @@ static const PortabilityLayer::RGBAColor gs_buttonRadioGraphicPixels[] =
 {
 	CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),
 	CLR(0),CLR(0),CLR(0),CLR(255),CLR(255),CLR(255),CLR(255),CLR(255),CLR(255),CLR(0),CLR(0),CLR(0),
-	CLR(0),CLR(0),CLR(255),CLR(255),CLR(kLightGray),CLR(kLightGray),CLR(kLightGray),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(0),CLR(0),
-	CLR(0),CLR(255),CLR(255),CLR(kLightGray),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(255),CLR(kLightGray),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(255),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(255),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(255),CLR(kLightGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(255),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(0),
-	CLR(0),CLR(0),CLR(kMidGray),CLR(kMidGray),CLR(kMidDarkGray),CLR(kMidDarkGray),CLR(kMidDarkGray),CLR(kMidDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(0),CLR(0),
-	CLR(0),CLR(0),CLR(0),CLR(kDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(kDarkGray),CLR(0),CLR(0),CLR(0),
+	CLR(0),CLR(0),CLR(255),CLR(255),CLR(kButtonLightGray),CLR(kButtonLightGray),CLR(kButtonLightGray),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(0),CLR(0),
+	CLR(0),CLR(255),CLR(255),CLR(kButtonLightGray),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(255),CLR(kButtonLightGray),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(255),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(255),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(255),CLR(kButtonLightGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(255),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(0),
+	CLR(0),CLR(0),CLR(kButtonMidGray),CLR(kButtonMidGray),CLR(kButtonMidDarkGray),CLR(kButtonMidDarkGray),CLR(kButtonMidDarkGray),CLR(kButtonMidDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(0),CLR(0),
+	CLR(0),CLR(0),CLR(0),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(kButtonDarkGray),CLR(0),CLR(0),CLR(0),
 	CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),CLR(0),
 };
 
@@ -222,7 +223,7 @@ namespace PortabilityLayer
 	}
 
 	ButtonWidget::ButtonWidget(const WidgetBasicState &state)
-		: WidgetSpec<ButtonWidget>(state)
+		: WidgetSpec<ButtonWidget, WidgetTypes::kButton>(state)
 		, m_text(state.m_text)
 		, m_haveHighlightOverride(false)
 		, m_buttonStyle(kButtonStyle_Button)
@@ -280,7 +281,13 @@ namespace PortabilityLayer
 			}
 
 			TimeTaggedVOSEvent evt;
-			if (WaitForEvent(&evt, 1))
+			bool haveEvent = false;
+			{
+				PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+				haveEvent = WaitForEvent(&evt, 1);
+			}
+
+			if (haveEvent)
 			{
 				if (evt.m_vosEvent.m_eventType == GpVOSEventTypes::kMouseInput)
 				{
@@ -363,45 +370,45 @@ namespace PortabilityLayer
 		if (!m_enabled)
 		{
 			cornerGraphics = gs_buttonDisabledCornerGraphics;
-			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			topStripeColors[1] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			leftStripeColors[1] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			centerColor = PortabilityLayer::RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-			textColor = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			borderColor = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
+			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			topStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			leftStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			centerColor = PortabilityLayer::RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+			textColor = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			borderColor = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
 		}
 		else if (inverted || m_haveHighlightOverride)
 		{
 			cornerGraphics = gs_buttonPressedCornerGraphics;
-			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			topStripeColors[1] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			leftStripeColors[1] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			centerColor = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
+			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			topStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			leftStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			centerColor = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
 			textColor = StdColors::White();
 			borderColor = StdColors::Black();
 		}
 		else
 		{
 			cornerGraphics = gs_buttonCornerGraphics;
-			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
+			topStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
 			topStripeColors[1] = StdColors::White();
-			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
+			leftStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
 			leftStripeColors[1] = StdColors::White();
-			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
-			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
-			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
-			centerColor = PortabilityLayer::RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
+			bottomStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			bottomStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
+			rightStripeColors[0] = PortabilityLayer::RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
+			rightStripeColors[1] = PortabilityLayer::RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
+			centerColor = PortabilityLayer::RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
 			textColor = StdColors::Black();
 			borderColor = StdColors::Black();
 		}
@@ -469,9 +476,9 @@ namespace PortabilityLayer
 		ResolveCachingColor *checkEraseColor = nullptr;
 		ResolveCachingColor *textColor = nullptr;
 
-		ResolveCachingColor midGrayColor = RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
-		ResolveCachingColor lightGrayColor = RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-		ResolveCachingColor darkGrayColor = RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
+		ResolveCachingColor midGrayColor = RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
+		ResolveCachingColor lightGrayColor = RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+		ResolveCachingColor darkGrayColor = RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
 		ResolveCachingColor blackColor = StdColors::Black();
 
 		if (!m_enabled)
@@ -558,9 +565,9 @@ namespace PortabilityLayer
 		ResolveCachingColor *radioColor = nullptr;
 		ResolveCachingColor *textColor = nullptr;
 
-		ResolveCachingColor midGrayColor = RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
-		ResolveCachingColor lightGrayColor = RGBAColor::Create(kLightGray, kLightGray, kLightGray, 255);
-		ResolveCachingColor darkGrayColor = RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
+		ResolveCachingColor midGrayColor = RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255);
+		ResolveCachingColor lightGrayColor = RGBAColor::Create(kButtonLightGray, kButtonLightGray, kButtonLightGray, 255);
+		ResolveCachingColor darkGrayColor = RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255);
 
 		if (!m_enabled)
 		{
@@ -613,15 +620,15 @@ namespace PortabilityLayer
 
 		RGBAColor upperLeftStripeColors[3] =
 		{
-			RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255),
+			RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255),
 			StdColors::White(),
 			StdColors::Black(),
 		};
 
 		RGBAColor bottomRightStripeColors[3] =
 		{
-			RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255),
-			RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255),
+			RGBAColor::Create(kButtonMidGray, kButtonMidGray, kButtonMidGray, 255),
+			RGBAColor::Create(kButtonDarkGray, kButtonDarkGray, kButtonDarkGray, 255),
 			StdColors::Black(),
 		};
 
@@ -653,3 +660,5 @@ namespace PortabilityLayer
 		}
 	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kButton, PortabilityLayer::ButtonWidget)

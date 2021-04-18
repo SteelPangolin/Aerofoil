@@ -96,8 +96,12 @@ void DoHighScores (void)
 //		DissBits(&workSrcRect);
 
 	InitCursor();
-	DelayTicks(60);
-	WaitForInputEvent(30);
+
+	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+		DelayTicks(60);
+		WaitForInputEvent(30);
+	}
 	
 	RedrawSplashScreen();
 }
@@ -553,7 +557,7 @@ void GetHighScoreName (short place)
 
 	while (!leaving)
 	{
-		item = theDial->ExecuteModal(nullptr, NameFilter);
+		item = theDial->ExecuteModal(nullptr, PL_FILTER_FUNC(NameFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -666,7 +670,7 @@ void GetHighScoreBanner (void)
 
 	while (!leaving)
 	{
-		item = theDial->ExecuteModal(nullptr, BannerFilter);
+		item = theDial->ExecuteModal(nullptr, PL_FILTER_FUNC(BannerFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -789,3 +793,5 @@ Boolean ReadScoresFromDisk (void)
 	return (true);
 }
 
+PL_IMPLEMENT_FILTER_FUNCTION(NameFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(BannerFilter)

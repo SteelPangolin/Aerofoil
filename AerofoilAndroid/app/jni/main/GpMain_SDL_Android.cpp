@@ -23,8 +23,6 @@
 
 GpAndroidGlobals g_gpAndroidGlobals;
 
-extern "C" IGpFontHandler *GpDriver_CreateFontHandler_FreeType2(const GpFontHandlerProperties &properties);
-
 IGpDisplayDriver *GpDriver_CreateDisplayDriver_SDL_GL2(const GpDisplayDriverProperties &properties);
 IGpAudioDriver *GpDriver_CreateAudioDriver_SDL(const GpAudioDriverProperties &properties);
 
@@ -90,7 +88,7 @@ int main(int argc, char* argv[])
 
 	g_gpGlobalConfig.m_audioDriverType = EGpAudioDriverType_SDL2;
 
-	g_gpGlobalConfig.m_fontHandlerType = EGpFontHandlerType_FreeType2;
+	g_gpGlobalConfig.m_fontHandlerType = EGpFontHandlerType_None;
 
 	g_gpGlobalConfig.m_inputDriverTypes = nullptr;
 	g_gpGlobalConfig.m_numInputDrivers = 0;
@@ -101,7 +99,6 @@ int main(int argc, char* argv[])
 
 	GpDisplayDriverFactory::RegisterDisplayDriverFactory(EGpDisplayDriverType_SDL_GL2, GpDriver_CreateDisplayDriver_SDL_GL2);
 	GpAudioDriverFactory::RegisterAudioDriverFactory(EGpAudioDriverType_SDL2, GpDriver_CreateAudioDriver_SDL);
-	GpFontHandlerFactory::RegisterFontHandlerFactory(EGpFontHandlerType_FreeType2, GpDriver_CreateFontHandler_FreeType2);
 
 	int returnCode = GpMain::Run();
 

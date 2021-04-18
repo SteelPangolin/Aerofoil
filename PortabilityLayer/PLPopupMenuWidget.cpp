@@ -12,15 +12,15 @@
 #include "FontFamily.h"
 #include "Vec2i.h"
 
-static const int kLightGray = 238;
-static const int kMidGray = 221;
-static const int kMidDarkGray = 170;
-static const int kDarkGray = 102;
+static const int kPopupMenuLightGray = 238;
+static const int kPopupMenuMidGray = 221;
+static const int kPopupMenuMidDarkGray = 170;
+static const int kPopupMenuDarkGray = 102;
 
 namespace PortabilityLayer
 {
 	PopupMenuWidget::PopupMenuWidget(const WidgetBasicState &state)
-		: WidgetSpec<PopupMenuWidget>(state)
+		: WidgetSpec<PopupMenuWidget, WidgetTypes::kPopupMenu>(state)
 	{
 	}
 
@@ -82,8 +82,8 @@ namespace PortabilityLayer
 
 		PortabilityLayer::ResolveCachingColor whiteColor = StdColors::White();
 		PortabilityLayer::ResolveCachingColor blackColor = StdColors::Black();
-		PortabilityLayer::ResolveCachingColor midGrayColor = RGBAColor::Create(kMidGray, kMidGray, kMidGray, 255);
-		PortabilityLayer::ResolveCachingColor darkGrayColor = RGBAColor::Create(kDarkGray, kDarkGray, kDarkGray, 255);
+		PortabilityLayer::ResolveCachingColor midGrayColor = RGBAColor::Create(kPopupMenuMidGray, kPopupMenuMidGray, kPopupMenuMidGray, 255);
+		PortabilityLayer::ResolveCachingColor darkGrayColor = RGBAColor::Create(kPopupMenuDarkGray, kPopupMenuDarkGray, kPopupMenuDarkGray, 255);
 
 		const Rect rect = m_rect;
 		const Rect innerRect = rect.Inset(2, 2);
@@ -144,3 +144,5 @@ namespace PortabilityLayer
 		return m_menu;
 	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kPopupMenu, PortabilityLayer::PopupMenuWidget)

@@ -27,30 +27,13 @@ public:
 	bool ValidateFilePath(const char *path, size_t pathLen) const override;
 	bool ValidateFilePathUnicodeChar(uint32_t ch) const override;
 
-	void SetMainThreadRelay(IGpThreadRelay *relay);
 	void SetDelayCallback(DelayCallback_t delayCallback) override;
 
 	static GpFileSystem_X *GetInstance();
 
 private:
-	struct ScanDirectoryNestedContext
-	{
-		GpFileSystem_X *m_this;
-
-		IGpDirectoryCursor *m_returnValue;
-		PortabilityLayer::VirtualDirectory_t m_virtualDirectory;
-		char const *const *m_paths;
-		size_t m_numPaths;
-	};
-
-	static void ScanDirectoryNestedThunk(void *context);
-	IGpDirectoryCursor *ScanDirectoryNestedInternal(PortabilityLayer::VirtualDirectory_t virtualDirectory, char const* const* paths, size_t numPaths);
-
-	IGpDirectoryCursor *ScanDirectory(PortabilityLayer::VirtualDirectory_t virtualDirectory, char const* const* paths, size_t numPaths);
-
 	bool ResolvePath(PortabilityLayer::VirtualDirectory_t virtualDirectory, char const* const* paths, size_t numPaths, std::string &resolution);
 
-	IGpThreadRelay *m_relay;
 	DelayCallback_t m_delayCallback;
 
 	std::string m_prefsPath;

@@ -101,7 +101,29 @@ namespace PortabilityLayer
 		static FontRendererImpl *GetInstance();
 
 	private:
+		static void SynthesizeBoldAA(IGpFontRenderedGlyph *&glyph, unsigned int xScale, unsigned int yScale, bool aa);
+
 		static FontRendererImpl ms_instance;
+	};
+
+	class ReRenderedGlyph final : public IGpFontRenderedGlyph
+	{
+	public:
+		const GpRenderedGlyphMetrics &GetMetrics() const override;
+		const void *GetData() const override;
+		void Destroy() override;
+
+		void *GetMutableData();
+		GpRenderedGlyphMetrics &GetMutableMetrics();
+
+		static ReRenderedGlyph *Create(unsigned int width, unsigned int height, bool aa);
+
+	private:
+		explicit ReRenderedGlyph(void *data, unsigned int width, unsigned int height, size_t pitch, size_t dataSize);
+
+		GpRenderedGlyphMetrics m_metrics;
+		void *m_data;
+		size_t m_dataSize;
 	};
 
 	bool RenderedFontImpl::GetGlyph(unsigned int character, const GpRenderedGlyphMetrics *&outMetricsPtr, const void *&outData) const
@@ -347,13 +369,38 @@ namespace PortabilityLayer
 		for (unsigned int i = 0; i < numCharacters; i++)
 			glyphs[i] = nullptr;
 
+		unsigned int xScale = 1;
+		unsigned int yScale = 1;
+		bool syntheticBoldAA = false;
+		if (fontHacks == FontHacks_SyntheticBold)
+		{
+			if (aa)
+			{
+				syntheticBoldAA = true;
+				xScale = 16;
+				yScale = 16;
+			}
+		}
+
 		for (unsigned int i = 0; i < numCharacters; i++)
 		{
 			uint16_t unicodeCodePoint = MacRoman::ToUnicode(i);
 			if (unicodeCodePoint == 0xffff)
 				continue;
 
-			glyphs[i] = font->Render(unicodeCodePoint, size, aa);
+			glyphs[i] = font->Render(unicodeCodePoint, size, xScale, yScale, aa);
+		}
+
+		if (fontHacks == FontHacks_SyntheticBold)
+		{
+			if (syntheticBoldAA)
+			{
+				for (unsigned int i = 0; i < numCharacters; i++)
+				{
+					if (glyphs[i])
+						SynthesizeBoldAA(glyphs[i], xScale, yScale, syntheticBoldAA);
+				}
+			}
 		}
 
 		size_t glyphDataSize = GP_SYSTEM_MEMORY_ALIGNMENT;	// So we can use 0 to mean no data
@@ -465,12 +512,164 @@ namespace PortabilityLayer
 		return true;
 	}
 
+	void FontRendererImpl::SynthesizeBoldAA(IGpFontRenderedGlyph *&glyph, unsigned int xScale, unsigned int yScale, bool aa)
+	{
+		GpRenderedGlyphMetrics metrics = glyph->GetMetrics();
+		const void *existingData = glyph->GetData();
+
+		uint32_t existingWidth = metrics.m_glyphWidth;
+		uint32_t existingHeight = metrics.m_glyphHeight;
+
+		uint32_t newWidth = (existingWidth + xScale - 1) / xScale + 1;
+		uint32_t newHeight = (existingHeight + yScale - 1) / yScale;
+
+		ReRenderedGlyph *newGlyph = ReRenderedGlyph::Create(newWidth, newHeight, aa);
+		if (!newGlyph)
+			return;
+
+		uint16_t *fattenAccumulateBuffer = static_cast<uint16_t*>(MemoryManager::GetInstance()->Alloc(newWidth * sizeof(uint16_t)));
+		if (!fattenAccumulateBuffer)
+		{
+			newGlyph->Destroy();
+			return;
+		}
+
+		GpRenderedGlyphMetrics &newMetrics = newGlyph->GetMutableMetrics();
+		newMetrics.m_advanceX = metrics.m_advanceX + 1;
+		newMetrics.m_bearingX = metrics.m_bearingX;
+		newMetrics.m_bearingY = metrics.m_bearingY;
+
+		const size_t existingDataPitch = metrics.m_glyphDataPitch;
+		const size_t newPitch = newMetrics.m_glyphDataPitch;
+		uint8_t *newData = static_cast<uint8_t*>(newGlyph->GetMutableData());
+
+		for (unsigned int outY = 0; outY < newHeight; outY++)
+		{
+			memset(fattenAccumulateBuffer, 0, newWidth * sizeof(uint16_t));
+
+			for (unsigned int subY = 0; subY < yScale; subY++)
+			{
+				unsigned int originalY = subY + outY * yScale;
+				if (originalY >= existingHeight)
+					break;
+
+				const uint8_t *existingRow = static_cast<const uint8_t*>(existingData) + originalY * existingDataPitch;
+
+				unsigned int streakCounter = 0;
+				unsigned int outX = 0;
+				unsigned int outSubX = 0;
+				for (unsigned int originalX = 0; originalX < newWidth * xScale; originalX++)
+				{
+					if (originalX < existingWidth)
+					{
+						//if (existingRow[originalX / 8] & (1 << (originalX & 7)))
+						uint8_t v = ((existingRow[originalX / 2] >> ((originalX & 1) * 4)) & 0xf);
+						if (v >= 8)
+							streakCounter = xScale + 1;
+					}
+
+					if (streakCounter > 0)
+					{
+						streakCounter--;
+						fattenAccumulateBuffer[outX]++;
+					}
+
+					outSubX++;
+					if (outSubX == xScale)
+					{
+						outSubX = 0;
+						outX++;
+					}
+				}
+			}
+
+			uint8_t *outRow = newData + outY * newPitch;
+			unsigned int divisor = xScale * yScale;
+			for (unsigned int x = 0; x < newWidth; x++)
+			{
+				uint32_t fraction = static_cast<uint32_t>(fattenAccumulateBuffer[x]) * 15;
+				fraction = (fraction * 2 + divisor) / (divisor * 2);
+
+				uint8_t *outByte = outRow + (x / 2);
+				(*outByte) |= fraction << ((x & 1) * 4);
+
+				size_t outOffset = outByte - newData;
+			}
+		}
+
+		MemoryManager::GetInstance()->Release(fattenAccumulateBuffer);
+
+		glyph->Destroy();
+		glyph = newGlyph;
+	}
+
 	FontRendererImpl *FontRendererImpl::GetInstance()
 	{
 		return &ms_instance;
 	}
 
 	FontRendererImpl FontRendererImpl::ms_instance;
+
+	const GpRenderedGlyphMetrics &ReRenderedGlyph::GetMetrics() const
+	{
+		return m_metrics;
+	}
+
+	const void *ReRenderedGlyph::GetData() const
+	{
+		return m_data;
+	}
+
+	void ReRenderedGlyph::Destroy()
+	{
+		this->~ReRenderedGlyph();
+		PortabilityLayer::MemoryManager::GetInstance()->Release(this);
+	}
+
+	void *ReRenderedGlyph::GetMutableData()
+	{
+		return m_data;
+	}
+
+	GpRenderedGlyphMetrics &ReRenderedGlyph::GetMutableMetrics()
+	{
+		return m_metrics;
+	}
+
+	ReRenderedGlyph *ReRenderedGlyph::Create(unsigned int width, unsigned int height, bool aa)
+	{
+		size_t pitchRequired = 0;
+		if (aa)
+			pitchRequired = (width + 1) / 2;
+		else
+			pitchRequired = (width + 7) / 8;
+
+		pitchRequired = pitchRequired + (GP_SYSTEM_MEMORY_ALIGNMENT - 1);
+		pitchRequired -= pitchRequired % GP_SYSTEM_MEMORY_ALIGNMENT;
+
+		size_t baseRequired = sizeof(ReRenderedGlyph);
+		baseRequired = baseRequired + (GP_SYSTEM_MEMORY_ALIGNMENT - 1);
+		baseRequired -= baseRequired % GP_SYSTEM_MEMORY_ALIGNMENT;
+
+		size_t totalRequired = baseRequired + pitchRequired * height;
+		void *storage = MemoryManager::GetInstance()->Alloc(totalRequired);
+		if (!storage)
+			return nullptr;
+
+		uint8_t *data = static_cast<uint8_t*>(storage) + baseRequired;
+		memset(data, 0, pitchRequired * height);
+
+		return new (storage) ReRenderedGlyph(data, width, height, pitchRequired, totalRequired - baseRequired);
+	}
+
+	ReRenderedGlyph::ReRenderedGlyph(void *data, unsigned int width, unsigned int height, size_t pitch, size_t dataSize)
+		: m_data(data)
+		, m_dataSize(dataSize)
+	{
+		m_metrics.m_glyphWidth = width;
+		m_metrics.m_glyphHeight = height;
+		m_metrics.m_glyphDataPitch = pitch;
+	}
 
 	FontRenderer *FontRenderer::GetInstance()
 	{

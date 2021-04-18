@@ -407,7 +407,7 @@ void DoLoadHouse (void)
 	
 	while (!leaving)
 	{
-		int16_t item = theDial->ExecuteModal(nullptr, LoadFilter);
+		int16_t item = theDial->ExecuteModal(nullptr, PL_FILTER_FUNC(LoadFilter));
 
 		bool requiresRedraw = false;
 		
@@ -665,3 +665,4 @@ void AddExtraHouse (const VFileSpec &newHouse)
 	numExtraHouses++;
 }
 
+PL_IMPLEMENT_FILTER_FUNCTION(LoadFilter)

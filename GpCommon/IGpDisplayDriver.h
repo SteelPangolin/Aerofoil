@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CoreDefs.h"
 #include "GpPixelFormat.h"
 #include "EGpStandardCursor.h"
 
@@ -29,10 +30,10 @@ struct IGpDisplayDriver
 {
 	typedef void (*SurfaceInvalidateCallback_t) (void *context);
 
-	virtual bool Init() = 0;
-	virtual void ServeTicks(int tickCount) = 0;
+	GP_ASYNCIFY_PARANOID_VIRTUAL bool Init() GP_ASYNCIFY_PARANOID_PURE;
+	GP_ASYNCIFY_PARANOID_VIRTUAL void ServeTicks(int tickCount) GP_ASYNCIFY_PARANOID_PURE;
 	virtual void ForceSync() = 0;
-	virtual void Shutdown() = 0;
+	GP_ASYNCIFY_PARANOID_VIRTUAL void Shutdown() GP_ASYNCIFY_PARANOID_PURE;
 
 	// Returns the initial resolution before any display resolution events are posted
 	virtual void GetInitialDisplayResolution(unsigned int *width, unsigned int *height) = 0;
@@ -40,8 +41,8 @@ struct IGpDisplayDriver
 	virtual IGpDisplayDriverSurface *CreateSurface(size_t width, size_t height, size_t pitch, GpPixelFormat_t pixelFormat, SurfaceInvalidateCallback_t invalidateCallback, void *invalidateContext) = 0;
 	virtual void DrawSurface(IGpDisplayDriverSurface *surface, int32_t x, int32_t y, size_t width, size_t height, const GpDisplayDriverSurfaceEffects *effects) = 0;
 
-	virtual IGpCursor *CreateBWCursor(size_t width, size_t height, const void *pixelData, const void *maskData, size_t hotSpotX, size_t hotSpotY) = 0;
-	virtual IGpCursor *CreateColorCursor(size_t width, size_t height, const void *pixelDataRGBA, size_t hotSpotX, size_t hotSpotY) = 0;
+	GP_ASYNCIFY_PARANOID_VIRTUAL IGpCursor *CreateBWCursor(size_t width, size_t height, const void *pixelData, const void *maskData, size_t hotSpotX, size_t hotSpotY) GP_ASYNCIFY_PARANOID_PURE;
+	GP_ASYNCIFY_PARANOID_VIRTUAL IGpCursor *CreateColorCursor(size_t width, size_t height, const void *pixelDataRGBA, size_t hotSpotX, size_t hotSpotY) GP_ASYNCIFY_PARANOID_PURE;
 
 	virtual void SetCursor(IGpCursor *cursor) = 0;
 	virtual void SetStandardCursor(EGpStandardCursor_t standardCursor) = 0;

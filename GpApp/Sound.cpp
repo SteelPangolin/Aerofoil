@@ -10,11 +10,14 @@
 #include "PLSound.h"
 #include "DialogManager.h"
 #include "Externs.h"
+#include "IGpLogDriver.h"
 #include "MemoryManager.h"
 #include "ResourceManager.h"
 #include "SoundSync.h"
 #include "VirtualDirectory.h"
 #include "WaveFormat.h"
+
+#include "PLDrivers.h"
 
 
 #define kBaseBufferSoundID			1000
@@ -273,26 +276,47 @@ void DumpBufferSounds (void)
 
 PLError_t OpenSoundChannels (void)
 {
+	IGpLogDriver *logger = PLDrivers::GetLogDriver();
+
 	if (channelOpen)
+	{
+		if (logger)
+			logger->Printf(IGpLogDriver::Category_Error, "Audio was already opened?");
 		return PLErrors::kAudioError;
+	}
 	
 	channel0 = PortabilityLayer::SoundSystem::GetInstance()->CreateChannel();
 	if (channel0)
 		channelOpen = true;
 	else
+	{
+		if (logger)
+			logger->Printf(IGpLogDriver::Category_Error, "Audio channel 0 failed to open");
+
 		return PLErrors::kAudioError;
+	}
 
 	channel1 = PortabilityLayer::SoundSystem::GetInstance()->CreateChannel();
 	if (channel1)
 		channelOpen = true;
 	else
+	{
+		if (logger)
+			logger->Printf(IGpLogDriver::Category_Error, "Audio channel 1 failed to open");
+
 		return PLErrors::kAudioError;
+	}
 
 	channel2 = PortabilityLayer::SoundSystem::GetInstance()->CreateChannel();
 	if (channel2)
 		channelOpen = true;
 	else
+	{
+		if (logger)
+			logger->Printf(IGpLogDriver::Category_Error, "Audio channel 2 failed to open");
+
 		return PLErrors::kAudioError;
+	}
 	
 	return PLErrors::kNone;
 }

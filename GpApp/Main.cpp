@@ -15,6 +15,7 @@
 #include "FontManager.h"
 #include "GpApplicationName.h"
 #include "GpRenderedFontMetrics.h"
+#include "IGpLogDriver.h"
 #include "IGpMutex.h"
 #include "IGpThreadEvent.h"
 #include "IGpDisplayDriver.h"
@@ -519,14 +520,19 @@ void gpAppInit()
 //--------------------------------------------------------------  main
 // Here is main().  The first function called when Glider PRO comes up.
 
-int gpAppMain()
+int AppStartup()
 {
-//	long		wasSeed;
+	//	long		wasSeed;
 	long		theErr;
 	PLError_t		fileErr;
 	Boolean		whoCares, copyGood;
 
 	PL_Init();
+
+	IGpLogDriver *logger = PLDrivers::GetLogDriver();
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 1...");
 
 	ToolBoxInit();
 	CheckOurEnvirons();
@@ -540,18 +546,24 @@ int gpAppMain()
 		RedAlert(kErrNeedSystem7);
 	if (thisMac.numScreens == 0)
 		RedAlert(kErrNeed16Or256Colors);
-//	dataResFile = OpenResFile("\pMermaid");
+	//	dataResFile = OpenResFile("\pMermaid");
 	SetUpAppleEvents();
 	LoadCursors();
 	ReadInPrefs();
 
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 2...");
+
 	SpinCursor(2);	// Tick once to let the display driver flush any resolution changes from prefs
 	FlushResolutionChange();
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 3...");
 
 #if defined COMPILEDEMO
 	copyGood = true;
 #elif defined COMPILENOCP
-//	didValidation = false;
+	//	didValidation = false;
 	copyGood = true;
 #else
 	didValidation = false;
@@ -562,8 +574,8 @@ int gpAppMain()
 		WriteOutPrefs();				SpinCursor(3);
 #endif
 
-//	if ((thisMac.numScreens > 1) && (isUseSecondScreen))
-//		ReflectSecondMonitorEnvirons(false, true, true);
+	//	if ((thisMac.numScreens > 1) && (isUseSecondScreen))
+	//		ReflectSecondMonitorEnvirons(false, true, true);
 	HandleDepthSwitching();
 	VariableInit();
 	GetExtraCursors();
@@ -571,6 +583,9 @@ int gpAppMain()
 	CreatePointers();
 	InitSrcRects();
 	CreateOffscreens();
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 3...");
 
 	bool resolutionChanged = false;
 
@@ -584,7 +599,7 @@ int gpAppMain()
 			FlushResolutionChange();
 		}
 
-		ShowInitialLaunchDisclaimer();
+		//ShowInitialLaunchDisclaimer();
 	}
 
 	if (thisMac.isResolutionDirty)
@@ -598,18 +613,31 @@ int gpAppMain()
 	if (isDoColorFade)
 		PortabilityLayer::WindowManager::GetInstance()->SetWindowDesaturation(mainWindow, 1.0);
 
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 4...");
+
 	InitSound();						SpinCursor(2);
 	InitMusic();						SpinCursor(2);
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Init phase 5...");
+
 	BuildHouseList();
 	OpenHouse(true);
 
 	PlayPrioritySound(kBirdSound, kBirdPriority);
-	DelayTicks(6);
+	{
+		PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+		DelayTicks(6);
+	}
 	InitializeMenus();					InitCursor();
 
 #if BUILD_ARCADE_VERSION
-//	HideMenuBarOld();
+	//	HideMenuBarOld();
 #endif
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Information, "Initialization completed");
 
 	if (isDoColorFade)
 		WashColorIn();
@@ -619,14 +647,16 @@ int gpAppMain()
 	if (thisMac.isTouchscreen)
 		StartMainMenuUI();
 
-	while (!quitting)		// this is the main loop
-		HandleEvent();
+	return 0;
+}
 
-/*
-#if BUILD_ARCADE_VERSION
-	ShowMenuBarOld();
-#endif
-*/
+int AppShutdown()
+{
+	/*
+	#if BUILD_ARCADE_VERSION
+		ShowMenuBarOld();
+	#endif
+	*/
 	KillMusic();
 	KillSound();
 	if (houseOpen)
@@ -641,8 +671,19 @@ int gpAppMain()
 	}
 	WriteOutPrefs();
 	PL_DEAD(FlushEvents());
-//	theErr = LoadScrap();
+	//	theErr = LoadScrap();
 
 	return 0;
 }
 
+int gpAppMain()
+{
+	int returnCode = AppStartup();
+	if (returnCode != 0)
+		return returnCode;
+
+	while (!quitting)		// this is the main loop
+		HandleEvent();
+
+	return AppShutdown();
+}

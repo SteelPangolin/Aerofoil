@@ -12,6 +12,7 @@
 #include "FileManager.h"
 #include "GpIOStream.h"
 #include "House.h"
+#include "IGpLogDriver.h"
 #include "IGpSystemServices.h"
 #include "ObjectEdit.h"
 #include "ResourceManager.h"
@@ -858,6 +859,11 @@ Boolean QuerySaveChanges (void)
 
 void YellowAlert (short whichAlert, short identifier)
 {
+	IGpLogDriver *logger = PLDrivers::GetLogDriver();
+
+	if (logger)
+		logger->Printf(IGpLogDriver::Category_Warning, "Yellow alert %i identifier %i", static_cast<int>(whichAlert), static_cast<int>(identifier));
+
 	#define		kYellowAlert	1006
 	Str255		errStr, errNumStr;
 	short		whoCares;

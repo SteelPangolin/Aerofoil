@@ -12,9 +12,10 @@
 #include "MemoryManager.h"
 #include "ResourceManager.h"
 
+#include "PLBigEndian.h"
 #include "PLDrivers.h"
 #include "PLResources.h"
-#include "PLBigEndian.h"
+#include "PLSysCalls.h"
 
 #include <assert.h>
 
@@ -375,6 +376,8 @@ void DecrementCursor (void)
 
 void SpinCursor (short incrementIndex)
 {
+	PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+
 	UInt32		dummyLong;
 	short		i;
 

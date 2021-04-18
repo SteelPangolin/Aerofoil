@@ -62,8 +62,6 @@ namespace PortabilityLayer
 
 		static void PubScrollBarCallback(void *captureContext, Widget *control, int part);
 		static bool PubEditBoxCharFilter(void *context, uint8_t ch);
-		static int16_t PubFileBrowserUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt);
-		static int16_t PubPopUpAlertUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt);
 
 		bool AppendName(const char *name, size_t nameLength, void *details);
 		void SortNames();
@@ -82,6 +80,9 @@ namespace PortabilityLayer
 
 		static int16_t PopUpAlert(const Rect &rect, int dialogResID, const DialogTextSubstitutions *substitutions);
 
+		int16_t FileBrowserUIFilter(Dialog *dialog, const TimeTaggedVOSEvent *evt);
+		int16_t PopUpAlertUIFilter(Dialog *dialog, const TimeTaggedVOSEvent *evt);
+
 	private:
 		typedef PascalStr<255> NameStr_t;
 
@@ -92,8 +93,6 @@ namespace PortabilityLayer
 		};
 
 		void ScrollBarCallback(Widget *control, int part);
-		int16_t FileBrowserUIFilter(Dialog *dialog, const TimeTaggedVOSEvent *evt);
-		int16_t PopUpAlertUIFilter(Dialog *dialog, const TimeTaggedVOSEvent *evt);
 
 		static bool FileEntrySortPred(const FileEntry &a, const FileEntry &b);
 
@@ -114,7 +113,21 @@ namespace PortabilityLayer
 
 		const FileBrowserUI_DetailsCallbackAPI m_api;
 	};
+}
 
+
+static int16_t FileBrowserUIImpl_FileBrowserUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
+{
+	return static_cast<PortabilityLayer::FileBrowserUIImpl*>(context)->FileBrowserUIFilter(dialog, evt);
+}
+
+static int16_t FileBrowserUIImpl_PopUpAlertUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
+{
+	return static_cast<PortabilityLayer::FileBrowserUIImpl*>(context)->PopUpAlertUIFilter(dialog, evt);
+}
+
+namespace PortabilityLayer
+{
 	FileBrowserUIImpl::FileBrowserUIImpl(const FileBrowserUI_DetailsCallbackAPI &callbackAPI)
 		: m_offset(0)
 		, m_surface(nullptr)
@@ -146,16 +159,6 @@ namespace PortabilityLayer
 	void FileBrowserUIImpl::PubScrollBarCallback(void *captureContext, Widget *control, int part)
 	{
 		static_cast<FileBrowserUIImpl*>(captureContext)->ScrollBarCallback(control, part);
-	}
-
-	int16_t FileBrowserUIImpl::PubFileBrowserUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
-	{
-		return static_cast<FileBrowserUIImpl*>(context)->FileBrowserUIFilter(dialog, evt);
-	}
-
-	int16_t FileBrowserUIImpl::PubPopUpAlertUIFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
-	{
-		return static_cast<FileBrowserUIImpl*>(context)->PopUpAlertUIFilter(dialog, evt);
 	}
 
 	bool FileBrowserUIImpl::PubEditBoxCharFilter(void *context, uint8_t ch)
@@ -356,6 +359,7 @@ namespace PortabilityLayer
 
 					if (okayButton->IsEnabled())
 					{
+						PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 						okayButton->SetHighlightStyle(kControlButtonPart, true);
 						PLSysCalls::Sleep(8);
 						okayButton->SetHighlightStyle(kControlButtonPart, false);
@@ -368,6 +372,7 @@ namespace PortabilityLayer
 				
 			case PL_KEY_SPECIAL(kEscape):
 				{
+					PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
 					Widget *cancelButton = dialog->GetItems()[kCancelButton - 1].GetWidget();
 
 					cancelButton->SetHighlightStyle(kControlButtonPart, true);
@@ -555,7 +560,7 @@ namespace PortabilityLayer
 		int16_t hit = 0;
 		do 
 		{
-			hit = dialog->ExecuteModal(nullptr, PubPopUpAlertUIFilter);
+			hit = dialog->ExecuteModal(nullptr, PL_FILTER_FUNC(FileBrowserUIImpl_PopUpAlertUIFilter));
 		} while (hit != kOkayButton && hit != kCancelButton);
 
 		dialog->Destroy();
@@ -709,7 +714,7 @@ namespace PortabilityLayer
 
 		do
 		{
-			hit = dialog->ExecuteModal(&uiImpl, FileBrowserUIImpl::PubFileBrowserUIFilter);
+			hit = dialog->ExecuteModal(&uiImpl, PL_FILTER_FUNC(FileBrowserUIImpl_FileBrowserUIFilter));
 
 			if (hit == kFileListScrollBar)
 				uiImpl.SetScrollOffset(scrollBar->GetState());
@@ -806,3 +811,6 @@ namespace PortabilityLayer
 		return confirmed;
 	}
 }
+
+PL_IMPLEMENT_FILTER_FUNCTION(FileBrowserUIImpl_FileBrowserUIFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(FileBrowserUIImpl_PopUpAlertUIFilter)

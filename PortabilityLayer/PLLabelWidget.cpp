@@ -11,7 +11,7 @@
 namespace PortabilityLayer
 {
 	LabelWidget::LabelWidget(const WidgetBasicState &state)
-		: WidgetSpec<LabelWidget>(state)
+		: WidgetSpec<LabelWidget, WidgetTypes::kLabel>(state)
 		, m_text(state.m_text)
 	{
 	}
@@ -46,4 +46,16 @@ namespace PortabilityLayer
 
 		surface->DrawStringWrap(textStartPoint, m_rect, m_text.ToShortStr(), blackColor, sysFont);
 	}
+
+	WidgetHandleState_t LabelWidget::ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt)
+	{
+		return DefaultProcessEvent(captureContext, evt);
+	}
+
+	int16_t LabelWidget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return DefaultCapture(captureContext, pos, callback);
+	}
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kLabel, PortabilityLayer::LabelWidget)

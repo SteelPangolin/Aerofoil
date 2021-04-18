@@ -14,8 +14,8 @@ void gpAppInit();
 class GpAppInterfaceImpl final : public GpAppInterface
 {
 public:
-	void ApplicationInit() override;
-	int ApplicationMain() override;
+	void ApplicationInit() GP_ASYNCIFY_PARANOID_OVERRIDE;
+	int ApplicationMain() GP_ASYNCIFY_PARANOID_OVERRIDE;
 
 	void PL_IncrementTickCounter(uint32_t count) override;
 	void PL_Render(IGpDisplayDriver *displayDriver) override;
@@ -30,7 +30,11 @@ void GpAppInterfaceImpl::ApplicationInit()
 
 int GpAppInterfaceImpl::ApplicationMain()
 {
+#if GP_ASYNCIFY_PARANOID
+	return gpAppMain();
+#else
 	return PLSysCalls::MainExitWrapper(gpAppMain);
+#endif
 }
 
 void GpAppInterfaceImpl::PL_IncrementTickCounter(uint32_t count)
@@ -69,3 +73,15 @@ GP_APP_DLL_EXPORT_API GpAppInterface *GpAppInterface_Get()
 {
 	return &gs_application;
 }
+
+#if GP_ASYNCIFY_PARANOID
+void GpAppInterface::ApplicationInit()
+{
+	static_cast<GpAppInterfaceImpl*>(this)->ApplicationInit();
+}
+
+int GpAppInterface::ApplicationMain()
+{
+	return static_cast<GpAppInterfaceImpl*>(this)->ApplicationMain();
+}
+#endif

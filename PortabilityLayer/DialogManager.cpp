@@ -34,6 +34,11 @@
 #include <stdlib.h>
 #include <new>
 
+int16_t DialogManagerImpl_AlertFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
+{
+	return -1;
+}
+
 namespace PortabilityLayer
 {
 	class DialogImpl;
@@ -90,7 +95,12 @@ namespace PortabilityLayer
 		ArrayView<const DialogItem> GetItems() const override;
 		void SetItemVisibility(unsigned int itemIndex, bool isVisible) override;
 
+#if GP_ASYNCIFY_PARANOID
+		template<class TFilterFunc>
+		int16_t ExecuteModal(void *captureContext, const TFilterFunc &filterFunc);
+#else
 		int16_t ExecuteModal(void *captureContext, DialogFilterFunc_t filterFunc) override;
+#endif
 
 		bool ReplaceWidget(unsigned int itemIndex, Widget *widget) override;
 
@@ -108,15 +118,71 @@ namespace PortabilityLayer
 
 		static void MakeStringSubstitutions(uint8_t *outStr, const uint8_t *inStr, const DialogTextSubstitutions *substitutions);
 
+#if GP_ASYNCIFY_PARANOID
+		template<class TFilterFunc>
+		int16_t ExecuteModalInDarkenStack(void *captureContext, const TFilterFunc &filterFunc);
+#else
 		int16_t ExecuteModalInDarkenStack(void *captureContext, DialogFilterFunc_t filterFunc);
+#endif
 
 		Window *m_window;
 		DialogItem *m_items;
 		size_t m_numItems;
 		size_t m_maxItems;
 	};
+}
 
 
+#if GP_ASYNCIFY_PARANOID
+
+#define PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(f)	\
+template<>	\
+int16_t Dialog::ExecuteModal(void *captureContext, DialogFilterFunc_t filterFuncID, const DialogFilterFuncs::InvokeWrapper<DialogFilterFuncs::k##f> &filterFunc)	\
+{	\
+	(void)filterFuncID;	\
+	return static_cast<PortabilityLayer::DialogImpl*>(this)->ExecuteModal(captureContext, filterFunc);	\
+}
+
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(BlowerFilter)
+
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(FurnitureFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(CustPictFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(SwitchFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(TriggerFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(ApplianceFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(MicrowaveFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(GreaseFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(InvisBonusFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(TransFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(EnemyFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(FlowerFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(LightFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(GoToFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(RoomFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(OriginalArtFilter)
+
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(AboutFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(LicenseReaderFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(LoadFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(AboutFrameworkFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(BrainsFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(NameFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(BannerFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(ControlFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(SoundFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(HouseFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(DisplayFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(PrefsFilter)
+
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(FileBrowserUIImpl_PopUpAlertUIFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(FileBrowserUIImpl_FileBrowserUIFilter)
+PL_DIALOG_IMPLEMENT_EXECUTE_MODAL(DialogManagerImpl_AlertFilter)
+
+#endif
+
+
+namespace PortabilityLayer
+{
 	DialogItem::DialogItem(Widget *widget)
 		: m_widget(widget)
 	{
@@ -336,7 +402,12 @@ namespace PortabilityLayer
 		}
 	}
 
+#if GP_ASYNCIFY_PARANOID
+	template<class TFilterFunc>
+	int16_t DialogImpl::ExecuteModal(void *captureContext, const TFilterFunc &filterFunc)
+#else
 	int16_t DialogImpl::ExecuteModal(void *captureContext, DialogFilterFunc_t filterFunc)
+#endif
 	{
 		Window *exclWindow = this->GetWindow();
 
@@ -349,7 +420,12 @@ namespace PortabilityLayer
 		return result;
 	}
 
+#if GP_ASYNCIFY_PARANOID
+	template<class TFilterFunc>
+	int16_t DialogImpl::ExecuteModalInDarkenStack(void *captureContext, const TFilterFunc &filterFunc)
+#else
 	int16_t DialogImpl::ExecuteModalInDarkenStack(void *captureContext, DialogFilterFunc_t filterFunc)
+#endif
 	{
 		Window *window = this->GetWindow();
 		Widget *capturingWidget = nullptr;
@@ -359,12 +435,16 @@ namespace PortabilityLayer
 		{
 			TimeTaggedVOSEvent evt;
 
-			const bool haveEvent = WaitForEvent(&evt, 1);
+			bool haveEvent = false;
+			{
+				PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+				haveEvent = WaitForEvent(&evt, 1);
+			}
 
 			if (!haveEvent && window->IsHandlingTickEvents())
 				window->OnTick();
 
-			const int16_t selection = (filterFunc != nullptr) ? filterFunc(captureContext, this, haveEvent ? &evt : nullptr) : -1;
+			const int16_t selection = filterFunc(captureContext, this, haveEvent ? &evt : nullptr);
 
 			if (selection >= 0)
 				return selection;
@@ -614,7 +694,7 @@ namespace PortabilityLayer
 	public:
 		Dialog *LoadDialog(int16_t resID, Window *behindWindow, const DialogTextSubstitutions *substitutions) override;
 		Dialog *LoadDialogFromTemplate(int16_t templateResID, const Rect &rect, bool visible, bool hasCloseBox, uint32_t referenceConstant, uint16_t positionSpec, Window *behindWindow, const PLPasStr &title, const DialogTextSubstitutions *substitutions) override;
-		int16_t DisplayAlert(int16_t alertResID, const DialogTextSubstitutions *substitutions) override;
+		int16_t DisplayAlert(int16_t alertResID, const DialogTextSubstitutions *substitutions) GP_ASYNCIFY_PARANOID_OVERRIDE;
 		void PositionWindow(Window *window, const Rect &rect) const override;
 
 		DialogTemplate *LoadDialogTemplate(int16_t resID);
@@ -622,9 +702,6 @@ namespace PortabilityLayer
 		static DialogManagerImpl *GetInstance();
 
 	private:
-
-		static int16_t AlertFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt);
-
 		static DialogManagerImpl ms_instance;
 	};
 
@@ -708,11 +785,6 @@ namespace PortabilityLayer
 		return dialog;
 	}
 
-	int16_t DialogManagerImpl::AlertFilter(void *context, Dialog *dialog, const TimeTaggedVOSEvent *evt)
-	{
-		return -1;
-	}
-
 	int16_t DialogManagerImpl::DisplayAlert(int16_t alertResID, const DialogTextSubstitutions *substitutions)
 	{
 		struct AlertResourceData
@@ -769,7 +841,7 @@ namespace PortabilityLayer
 		if (!dialog)
 			return 0;
 
-		int16_t hit = dialog->ExecuteModal(nullptr, DialogManagerImpl::AlertFilter);
+		int16_t hit = dialog->ExecuteModal(nullptr, PL_FILTER_FUNC(DialogManagerImpl_AlertFilter));
 		dialog->Destroy();
 
 		return hit;
@@ -885,3 +957,12 @@ namespace PortabilityLayer
 		return DialogManagerImpl::GetInstance();
 	}
 }
+
+PL_IMPLEMENT_FILTER_FUNCTION(DialogManagerImpl_AlertFilter)
+
+#if GP_ASYNCIFY_PARANOID
+int16_t PortabilityLayer::DialogManager::DisplayAlert(int16_t alertResID, const DialogTextSubstitutions *substitutions)
+{
+	return static_cast<DialogManagerImpl*>(this)->DisplayAlert(alertResID, substitutions);
+}
+#endif

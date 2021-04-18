@@ -41,7 +41,7 @@ static const int kStarsOffset = 180;
 static const int kGlidersOffset = 260;
 static const int kScoreOffset = 320;
 
-static void FBUI_DrawLabels(DrawSurface *surface, const Point &basePoint)
+static void FBUI_Save_DrawLabels(DrawSurface *surface, const Point &basePoint)
 {
 	PortabilityLayer::ResolveCachingColor blackColor(StdColors::Black());
 	PortabilityLayer::RenderedFont *rfont = GetFont(PortabilityLayer::FontPresets::kSystem12Bold);
@@ -51,7 +51,7 @@ static void FBUI_DrawLabels(DrawSurface *surface, const Point &basePoint)
 	surface->DrawString(basePoint + Point::Create(kScoreOffset, 0), PSTR("Score"), blackColor, rfont);
 }
 
-static void FBUI_DrawFileDetails(DrawSurface *surface, const Point &basePoint, const Rect &constraintRect, void *fileDetails)
+static void FBUI_Save_DrawFileDetails(DrawSurface *surface, const Point &basePoint, const Rect &constraintRect, void *fileDetails)
 {
 	PortabilityLayer::ResolveCachingColor blackColor(StdColors::Black());
 	PortabilityLayer::RenderedFont *rfont = GetFont(PortabilityLayer::FontPresets::kSystem12Bold);
@@ -70,7 +70,7 @@ static void FBUI_DrawFileDetails(DrawSurface *surface, const Point &basePoint, c
 	surface->DrawString(basePoint + Point::Create(kScoreOffset, 0), numStr, blackColor, rfont);
 }
 
-static void *FBUI_LoadFileDetails(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
+static void *FBUI_Save_LoadFileDetails(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
 {
 	GpIOStream *stream = nullptr;
 	if (PortabilityLayer::FileManager::GetInstance()->OpenNonCompositeFile(dirID, filename, ".sav", PortabilityLayer::EFilePermission_Read, GpFileCreationDispositions::kOpenExisting, stream) != PLErrors::kNone)
@@ -97,12 +97,12 @@ static void *FBUI_LoadFileDetails(PortabilityLayer::VirtualDirectory_t dirID, co
 	return gameData;
 }
 
-static void FBUI_FreeFileDetails(void *fileDetails)
+static void FBUI_Save_FreeFileDetails(void *fileDetails)
 {
 	PortabilityLayer::MemoryManager::GetInstance()->Release(fileDetails);
 }
 
-static bool FBUI_FilterFile(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
+static bool FBUI_Save_FilterFile(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
 {
 	return true;
 }
@@ -111,11 +111,11 @@ static PortabilityLayer::FileBrowserUI_DetailsCallbackAPI GetSavedGameDetailsAPI
 {
 	PortabilityLayer::FileBrowserUI_DetailsCallbackAPI api;
 
-	api.m_drawLabelsCallback = FBUI_DrawLabels;
-	api.m_drawFileDetailsCallback = FBUI_DrawFileDetails;
-	api.m_loadFileDetailsCallback = FBUI_LoadFileDetails;
-	api.m_freeFileDetailsCallback = FBUI_FreeFileDetails;
-	api.m_filterFileCallback = FBUI_FilterFile;
+	api.m_drawLabelsCallback = FBUI_Save_DrawLabels;
+	api.m_drawFileDetailsCallback = FBUI_Save_DrawFileDetails;
+	api.m_loadFileDetailsCallback = FBUI_Save_LoadFileDetails;
+	api.m_freeFileDetailsCallback = FBUI_Save_FreeFileDetails;
+	api.m_filterFileCallback = FBUI_Save_FilterFile;
 
 	return api;
 }

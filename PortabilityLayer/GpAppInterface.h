@@ -32,8 +32,8 @@ struct IGpDisplayDriver;
 class GpAppInterface
 {
 public:
-	virtual void ApplicationInit() = 0;
-	virtual int ApplicationMain() = 0;
+	GP_ASYNCIFY_PARANOID_VIRTUAL void ApplicationInit() GP_ASYNCIFY_PARANOID_PURE;
+	GP_ASYNCIFY_PARANOID_VIRTUAL int ApplicationMain() GP_ASYNCIFY_PARANOID_PURE;
 	virtual void PL_IncrementTickCounter(uint32_t count) = 0;
 	virtual void PL_Render(IGpDisplayDriver *displayDriver) = 0;
 	virtual GpDriverCollection *PL_GetDriverCollection() = 0;

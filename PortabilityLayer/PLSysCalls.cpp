@@ -15,6 +15,7 @@
 #include "MacRomanConversion.h"
 
 #include "PLDrivers.h"
+#include "CoreDefs.h"
 
 #include <assert.h>
 #include <setjmp.h>
@@ -173,8 +174,33 @@ static void ImportVOSEvents(uint32_t timestamp)
 
 namespace PLSysCalls
 {
+	// Asyncify disarm checks are for manually checking that a stack has no indirect calls.
+	// They should not be nested!
+#if GP_DEBUG_CONFIG && GP_ASYNCIFY_PARANOID
+	static bool g_asyncifyParanoidDisarmed = false;
+
+	void AsyncifyParanoidSetDisarmed(bool state)
+	{
+		assert(g_asyncifyParanoidDisarmed != state);
+		g_asyncifyParanoidDisarmed = state;
+	}
+
+	AsyncifyDisarmScope::AsyncifyDisarmScope()
+	{
+		AsyncifyParanoidSetDisarmed(true);
+	}
+
+	AsyncifyDisarmScope::~AsyncifyDisarmScope()
+	{
+		AsyncifyParanoidSetDisarmed(false);
+	}
+#endif
+
 	void Sleep(uint32_t ticks)
 	{
+#if GP_DEBUG_CONFIG && GP_ASYNCIFY_PARANOID
+		assert(g_asyncifyParanoidDisarmed);
+#endif
 		if (ticks > 0)
 		{
 			PortabilityLayer::RenderFrames(ticks);
@@ -190,8 +216,12 @@ namespace PLSysCalls
 
 	void Exit(int exitCode)
 	{
+#if GP_ASYNCIFY_PARANOID
+		exit(exitCode);
+#else
 		gs_exitCode = exitCode;
 		longjmp(gs_mainExitWrapper, 1);
+#endif
 	}
 
 	int MainExitWrapper(int (*mainFunc)())

@@ -23,6 +23,7 @@
 #include "PLDrivers.h"
 #include "PLNumberFormatting.h"
 #include "PLPasStr.h"
+#include "PLSysCalls.h"
 
 #define kMainWindowID			128
 #define kEditWindowID			129
@@ -571,6 +572,8 @@ void HardDrawMainWindow (void)
 // palette.  In this way, color appears to slowly wash in.
 void WashColorIn (void)
 {
+	PL_ASYNCIFY_PARANOID_DISARM_FOR_SCOPE();
+
 	#define		kGray2ColorSteps	180
 	long		longDelta;
 	short		i, c;

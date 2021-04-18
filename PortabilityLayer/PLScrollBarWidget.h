@@ -7,7 +7,7 @@ struct Rect;
 
 namespace PortabilityLayer
 {
-	class ScrollBarWidget final : public WidgetSpec<ScrollBarWidget>
+	class ScrollBarWidget final : public WidgetSpec<ScrollBarWidget, WidgetTypes::kScrollBar>
 	{
 	public:
 		explicit ScrollBarWidget(const WidgetBasicState &state);
@@ -15,7 +15,7 @@ namespace PortabilityLayer
 		bool Init(const WidgetBasicState &state, const void *additionalData) override;
 
 		void OnEnabledChanged() override;
-		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) override;
+		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) GP_ASYNCIFY_PARANOID_OVERRIDE;
 		void DrawControl(DrawSurface *surface) override;
 
 		void SetState(int16_t state) override;
@@ -24,7 +24,7 @@ namespace PortabilityLayer
 		void SetMin(int32_t v) override;
 		void SetMax(int32_t v) override;
 
-		int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) override;
+		int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) GP_ASYNCIFY_PARANOID_OVERRIDE;
 
 		int ResolvePart(const Point &point) const override;
 

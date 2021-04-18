@@ -1,0 +1,9 @@
+call MakeBuildDirs.bat
+call BuildAerofoilSDL.bat
+call BuildAerofoilWeb.bat
+call BuildGpApp.bat
+call BuildGpShell.bat
+call BuildMacRomanConversion.bat
+call BuildPortabilityLayer.bat
+call BuildResources.bat
+call Link.bat

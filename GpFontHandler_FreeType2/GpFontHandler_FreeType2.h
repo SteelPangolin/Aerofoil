@@ -16,7 +16,7 @@ namespace PortabilityLayer
 class GpFontHandler_FreeType2 final : public IGpFontHandler
 {
 public:
-	IGpFont *LoadFont(GpIOStream *stream) override;
+	IGpFont *LoadFont(GpIOStream *stream, int typeFaceIndex) override;
 	void Shutdown() override;
 
 	bool KeepStreamOpen() const override;

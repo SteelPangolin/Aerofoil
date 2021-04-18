@@ -5,7 +5,7 @@
 
 namespace PortabilityLayer
 {
-	class ButtonWidget final : public WidgetSpec<ButtonWidget>
+	class ButtonWidget final : public WidgetSpec<ButtonWidget, WidgetTypes::kButton>
 	{
 	public:
 		enum ButtonStyle
@@ -30,10 +30,10 @@ namespace PortabilityLayer
 		void SetString(const PLPasStr &str) override;
 		PLPasStr GetString() const override;
 
-		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) override;
+		WidgetHandleState_t ProcessEvent(void *captureContext, const TimeTaggedVOSEvent &evt) GP_ASYNCIFY_PARANOID_OVERRIDE;
 		void OnEnabledChanged() override;
 		void OnStateChanged() override;
-		int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) override;
+		int16_t Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback) GP_ASYNCIFY_PARANOID_OVERRIDE;
 		void SetHighlightStyle(int16_t style, bool enabled) override;
 
 		static void DrawDefaultButtonChrome(const Rect &rect, DrawSurface *surface);

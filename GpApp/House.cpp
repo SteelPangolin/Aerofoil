@@ -52,24 +52,24 @@ extern	Boolean		houseOpen, noRoomAtAll;
 extern	Boolean		twoPlayerGame, wardBitSet, phoneBitSet;
 
 
-static void FBUI_DrawLabels(DrawSurface *surface, const Point &basePoint)
+static void FBUI_House_DrawLabels(DrawSurface *surface, const Point &basePoint)
 {
 }
 
-static void FBUI_DrawFileDetails(DrawSurface *surface, const Point &basePoint, const Rect &constraintRect, void *fileDetails)
+static void FBUI_House_DrawFileDetails(DrawSurface *surface, const Point &basePoint, const Rect &constraintRect, void *fileDetails)
 {
 }
 
-static void *FBUI_LoadFileDetails(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
+static void *FBUI_House_LoadFileDetails(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
 {
 	return nullptr;
 }
 
-static void FBUI_FreeFileDetails(void *fileDetails)
+static void FBUI_House_FreeFileDetails(void *fileDetails)
 {
 }
 
-static bool FBUI_FilterFile(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
+static bool FBUI_House_FilterFile(PortabilityLayer::VirtualDirectory_t dirID, const PLPasStr &filename)
 {
 	PortabilityLayer::CompositeFile *cfile = PortabilityLayer::FileManager::GetInstance()->OpenCompositeFile(dirID, filename);
 
@@ -80,11 +80,11 @@ static PortabilityLayer::FileBrowserUI_DetailsCallbackAPI GetHouseDetailsAPI()
 {
 	PortabilityLayer::FileBrowserUI_DetailsCallbackAPI api;
 
-	api.m_drawLabelsCallback = FBUI_DrawLabels;
-	api.m_drawFileDetailsCallback = FBUI_DrawFileDetails;
-	api.m_loadFileDetailsCallback = FBUI_LoadFileDetails;
-	api.m_freeFileDetailsCallback = FBUI_FreeFileDetails;
-	api.m_filterFileCallback = FBUI_FilterFile;
+	api.m_drawLabelsCallback = FBUI_House_DrawLabels;
+	api.m_drawFileDetailsCallback = FBUI_House_DrawFileDetails;
+	api.m_loadFileDetailsCallback = FBUI_House_LoadFileDetails;
+	api.m_freeFileDetailsCallback = FBUI_House_FreeFileDetails;
+	api.m_filterFileCallback = FBUI_House_FilterFile;
 
 	return api;
 }
@@ -707,7 +707,7 @@ int16_t GoToFilter(void *context, Dialog *dial, const TimeTaggedVOSEvent *evt)
 	
 	while (!leaving)
 	{
-		item = theDialog->ExecuteModal(nullptr, GoToFilter);
+		item = theDialog->ExecuteModal(nullptr, PL_FILTER_FUNC(GoToFilter));
 		
 		if (item == kOkayButton)
 		{
@@ -863,3 +863,4 @@ void ShiftWholeHouse (short howFar)
 	CloseMessageWindow();
 }
 
+PL_IMPLEMENT_FILTER_FUNCTION(GoToFilter)

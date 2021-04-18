@@ -136,7 +136,7 @@ void DoAbout (void)
 	
 	do										// Loop until user wants to exit
 	{
-		hit = aboutDialog->ExecuteModal(nullptr, AboutFilter);
+		hit = aboutDialog->ExecuteModal(nullptr, PL_FILTER_FUNC(AboutFilter));
 	}
 	while (hit != kOkayButton);
 
@@ -218,7 +218,7 @@ void DoLicenseReader(int resID)
 
 	do
 	{
-		hit = dialog->ExecuteModal(nullptr, LicenseReaderFilter);
+		hit = dialog->ExecuteModal(nullptr, PL_FILTER_FUNC(LicenseReaderFilter));
 	} while (hit != kOkayButton);
 
 	dialog->Destroy();
@@ -265,7 +265,7 @@ void DoAboutOpenSource(void)
 
 	do
 	{
-		hit = dialog->ExecuteModal(nullptr, AboutFrameworkFilter);
+		hit = dialog->ExecuteModal(nullptr, PL_FILTER_FUNC(AboutFrameworkFilter));
 
 		switch (hit)
 		{
@@ -359,7 +359,7 @@ void DoAboutFramework (void)
 
 	do
 	{
-		hit = dialog->ExecuteModal(nullptr, AboutFrameworkFilter);
+		hit = dialog->ExecuteModal(nullptr, PL_FILTER_FUNC(AboutFrameworkFilter));
 
 		if (hit == kAboutOpenSourceButton)
 			DoAboutOpenSource();
@@ -766,3 +766,6 @@ static int16_t LicenseReaderFilter(void *context, Dialog *dialog, const TimeTagg
 	return hit;
 }
 
+PL_IMPLEMENT_FILTER_FUNCTION(AboutFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(LicenseReaderFilter)
+PL_IMPLEMENT_FILTER_FUNCTION(AboutFrameworkFilter)

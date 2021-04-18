@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "PLRegions.h"
+#include "PLSysCalls.h"
 
 struct Window;
 struct DrawSurface;
@@ -39,8 +40,8 @@ namespace PortabilityLayer
 		virtual bool GetWindowChromeInteractionZone(Window *window, const Vec2i &point, RegionID_t &outRegion) const = 0;
 		virtual void SwapExclusiveWindow(Window *& windowRef) = 0;
 
-		virtual void FlickerWindowIn(Window *window, int32_t velocity) = 0;
-		virtual void FlickerWindowOut(Window *window, int32_t velocity) = 0;
+		GP_ASYNCIFY_PARANOID_VIRTUAL void FlickerWindowIn(Window *window, int32_t velocity) GP_ASYNCIFY_PARANOID_PURE;
+		GP_ASYNCIFY_PARANOID_VIRTUAL void FlickerWindowOut(Window *window, int32_t velocity) GP_ASYNCIFY_PARANOID_PURE;
 
 		virtual void SetWindowDesaturation(Window *window, float desaturationLevel) = 0;
 

@@ -26,7 +26,7 @@
 namespace PortabilityLayer
 {
 	EditboxWidget::EditboxWidget(const WidgetBasicState &state)
-		: WidgetSpec<EditboxWidget>(state)
+		: WidgetSpec<EditboxWidget, WidgetTypes::kEditbox>(state)
 		, m_capacity(255)
 		, m_length(0)
 		, m_chars(nullptr)
@@ -349,6 +349,11 @@ namespace PortabilityLayer
 		}
 
 		return WidgetHandleStates::kIgnored;
+	}
+
+	int16_t EditboxWidget::Capture(void *captureContext, const Point &pos, WidgetUpdateCallback_t callback)
+	{
+		return DefaultCapture(captureContext, pos, callback);
 	}
 
 	Rect EditboxWidget::GetExpandedRect() const
@@ -1325,16 +1330,19 @@ namespace PortabilityLayer
 		return ccs->m_category;
 	}
 
-	FontFamily *EditboxWidget::GetFontFamily() const
+	FontPreset_t EditboxWidget::GetFontPreset() const
 	{
-		FontFamilyID_t preset = FontFamilyIDs::kCount;
-		PortabilityLayer::FontManager::GetInstance()->GetFontPreset(FontPresets::kSystem12, &preset, nullptr, nullptr, nullptr);
-		return PortabilityLayer::FontManager::GetInstance()->GetFont(preset);
+		return FontPresets::kSystem12;
 	}
 
 	RenderedFont *EditboxWidget::GetRenderedFont() const
 	{
-		return PortabilityLayer::FontManager::GetInstance()->GetRenderedFontFromFamily(GetFontFamily(), 12, true, FontFamilyFlag_None);
+		PortabilityLayer::FontFamilyID_t fontFamilyID = FontFamilyIDs::kCount;
+		int size = 0;
+		int varFlags = 0;
+		bool aa = false;
+		PortabilityLayer::FontManager::GetInstance()->GetFontPreset(GetFontPreset(), &fontFamilyID, &size, &varFlags, &aa);
+		return PortabilityLayer::FontManager::GetInstance()->LoadCachedRenderedFont(fontFamilyID, size, aa, varFlags);
 	}
 
 	void EditboxWidget::SetMultiLine(bool isMultiLine)
@@ -1394,4 +1402,7 @@ namespace PortabilityLayer
 		{ 0xf5, EditboxWidget::CharacterCategory_AlphaNumeric },
 		{ 0xff, EditboxWidget::CharacterCategory_Punctuation },
 	};
+
 }
+
+PL_IMPLEMENT_WIDGET_TYPE(PortabilityLayer::WidgetTypes::kEditbox, PortabilityLayer::EditboxWidget)
