@@ -3,16 +3,14 @@
 #include "GpLogDriver_Clog.h"
 
 /// Log the message to `clog`.
+/// Note: does not prepend timestamp.
 void GpLogDriver_Clog::VPrintf(Category category, const char *fmt, va_list args)
 {
-    size_t fmtSize = 0;
     bool hasFormatting = false;
     for (const char *fmtCheck = fmt; *fmtCheck; fmtCheck++)
     {
         if (*fmtCheck == '%')
             hasFormatting = true;
-
-        fmtSize++;
     }
 
     const char *debugTag = "";
@@ -41,7 +39,10 @@ void GpLogDriver_Clog::VPrintf(Category category, const char *fmt, va_list args)
     }
     else
     {
-        int formattedSize = vsnprintf(nullptr, 0, fmt, args);
+        va_list lengthArgs;
+        va_copy(lengthArgs, args);
+        int formattedSize = vsnprintf(nullptr, 0, fmt, lengthArgs);
+        va_end(lengthArgs);
         if (formattedSize <= 0)
             return;
 

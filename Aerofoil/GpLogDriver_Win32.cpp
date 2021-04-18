@@ -45,6 +45,9 @@ void GpLogDriver_Win32::VPrintf(Category category, const char *fmt, va_list args
 	case Category_Error:
 		debugTag = "[ERROR] ";
 		break;
+	case Category_Information:
+		debugTag = "[INFO] ";
+		break;
 	};
 
 	if (debugTag[0])
@@ -54,7 +57,10 @@ void GpLogDriver_Win32::VPrintf(Category category, const char *fmt, va_list args
 		m_stream->Write(fmt, fmtSize);
 	else
 	{
-		int formattedSize = vsnprintf(nullptr, 0, fmt, args);
+		va_list lengthArgs;
+		va_copy(lengthArgs, args);
+		int formattedSize = vsnprintf(nullptr, 0, fmt, lengthArgs);
+		va_end(lengthArgs);
 		if (formattedSize <= 0)
 			return;
 

@@ -51,10 +51,6 @@ _TODO: port `ConvertResources.bat` so we can build game data from source anywher
 
 Created `GpLogDriver_Clog`, a portable logger that writes to `clog`, the C++ equivalent of `stderr`, and temporarily switched the SDL port to use that instead of the file-backed `GpLogDriver_X`. This is more convenient than a file log when developing with Xcode.
 
-### Missing pixel shader
+Noticed problems with `GpLogDriver_Clog` due to `va_list` reuse in copied code. Fixed issue in other loggers.
 
-Window can now be created, and then program immediately crashes with a bad access.
-
-`GpDisplayDriver_SDL_GL2::DrawQuadProgram::Link` fails when `pixelShader` is unexpectedly null.
-
-Out of all the `GpDisplayDriver_SDL_GL2::InitResources`, only 
+Added `[INFO]` debug tag to all loggers.

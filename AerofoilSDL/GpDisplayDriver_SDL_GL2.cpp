@@ -130,6 +130,39 @@ namespace GpBinarizedShaders
 
 	extern const char *g_copyQuadP_GL2;
 	extern const char *g_scaleQuadP_GL2;
+
+    /// Debugging aid. Given pointer to binarized shader source, returns its name.
+    const char *name(const char *shaderSrc) {
+        if (shaderSrc == g_drawQuadV_GL2) {
+            return "g_drawQuadV_GL2";
+        
+        } else if (shaderSrc == g_drawQuadPalettePF_GL2) {
+            return "g_drawQuadPalettePF_GL2";
+        } else if (shaderSrc == g_drawQuadPalettePNF_GL2) {
+            return "g_drawQuadPalettePNF_GL2";
+        } else if (shaderSrc == g_drawQuad32PF_GL2) {
+            return "g_drawQuad32PF_GL2";
+        } else if (shaderSrc == g_drawQuad32PNF_GL2) {
+            return "g_drawQuad32PNF_GL2";
+        
+        } else if (shaderSrc == g_drawQuadPaletteICCPF_GL2) {
+            return "g_drawQuadPaletteICCPF_GL2";
+        } else if (shaderSrc == g_drawQuadPaletteICCPNF_GL2) {
+            return "g_drawQuadPaletteICCPNF_GL2";
+        } else if (shaderSrc == g_drawQuad32ICCPF_GL2) {
+            return "g_drawQuad32ICCPF_GL2";
+        } else if (shaderSrc == g_drawQuad32ICCPNF_GL2) {
+            return "g_drawQuad32ICCPNF_GL2";
+        
+        } else if (shaderSrc == g_copyQuadP_GL2) {
+            return "g_copyQuadP_GL2";
+        } else if (shaderSrc == g_scaleQuadP_GL2) {
+            return "g_scaleQuadP_GL2";
+        
+        } else {
+            return "<unknown shader>";
+        }
+    }
 }
 
 struct GpGLFunctions
@@ -2438,6 +2471,11 @@ GpComPtr<GpGLShader<TShaderType>> GpDisplayDriver_SDL_GL2::CreateShader(const ch
 		m_gl.GetShaderInfoLog(shader->GetID(), static_cast<GLsizei>(log.size() - 1), nullptr, reinterpret_cast<GLchar*>(&log[0]));
 
 		const char *errorMsg = &log[0];
+        
+        IGpLogDriver *logger = m_properties.m_logger;
+
+        if (logger)
+            logger->Printf(IGpLogDriver::Category_Error, "GpDisplayDriver_SDL_GL2::CreateShader: couldn't compile shader %s", GpBinarizedShaders::name(shaderSrc));
 
 		return GpComPtr<GpGLShader<TShaderType>>();
 	}
@@ -2977,6 +3015,8 @@ void GpDisplayDriver_SDL_GL2::ScaleVirtualScreen()
 
 bool GpDisplayDriver_SDL_GL2::DrawQuadProgram::Link(GpDisplayDriver_SDL_GL2 *driver, const GpGLShader<GL_VERTEX_SHADER> *vertexShader, const GpGLShader<GL_FRAGMENT_SHADER> *pixelShader)
 {
+    
+    
 	m_program = GpGLProgram::Create(driver);
 	if (!m_program)
 		return false;
