@@ -5,6 +5,7 @@
 #include "GpDisplayDriverFactory.h"
 #include "GpGlobalConfig.h"
 #include "GpFileSystem_X.h"
+#include "GpLogDriver_Clog.h"
 #include "GpLogDriver_X.h"
 #include "GpFontHandlerFactory.h"
 #include "GpInputDriverFactory.h"
@@ -36,6 +37,7 @@ int main(int argc, char *argv[])
 	GpFileSystem_X::GetInstance()->Init();
 
 	IGpLogDriver *logger = GpLogDriver_X::GetInstance();
+    logger = GpLogDriver_Clog::GetInstance(); // DEBUG(eee)
 	GpDriverCollection *drivers = GpAppInterface_Get()->PL_GetDriverCollection();
 
 	drivers->SetDriver<GpDriverIDs::kFileSystem>(GpFileSystem_X::GetInstance());
