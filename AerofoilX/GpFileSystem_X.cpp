@@ -180,9 +180,6 @@ bool GpFileSystem_X::ResolvePath(PortabilityLayer::VirtualDirectory_t virtualDir
 	case PortabilityLayer::VirtualDirectories::kPrefs:
 		prefsAppend = "Prefs";
 		break;
-	case PortabilityLayer::VirtualDirectories::kFontCache:
-		prefsAppend = "FontCache";
-		break;
 	default:
 		return false;
 	};
