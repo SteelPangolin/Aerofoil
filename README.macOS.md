@@ -54,3 +54,15 @@ Created `GpLogDriver_Clog`, a portable logger that writes to `clog`, the C++ equ
 Noticed problems with `GpLogDriver_Clog` due to `va_list` reuse in copied code. Fixed issue in other loggers.
 
 Added `[INFO]` debug tag to all loggers.
+
+### Missing pixel shader
+
+Window can now be created, and then program immediately crashes with a bad access. Added some logging to shader compilation.
+
+`GpDisplayDriver_SDL_GL2::DrawQuadProgram::Link` fails when `pixelShader` is unexpectedly null. It now exits early in that case.
+
+Almost all of the shaders currently fail to compile, probably due to GLSL language level differences on macOS:
+
+```
+g_copyQuadP_GL2: ERROR: 0:1: 'precision' : syntax error: syntax error
+```
