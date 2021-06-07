@@ -1,6 +1,6 @@
-#define GP_GL_SHADER_CODE_MEDIUM_PRECISION_PREFIX	"precision mediump float;\n"\
+#define GP_GL_SHADER_CODE_MEDIUM_PRECISION_PREFIX	"" // precision mediump float;\n"\
 
-#define GP_GL_SHADER_CODE_HIGH_PRECISION_PREFIX	"precision highp float;\n"\
+#define GP_GL_SHADER_CODE_HIGH_PRECISION_PREFIX	"" // "precision highp float;\n"\
 
 
 #define GP_GL_SHADER_CODE_FUNCTIONS_H	"vec3 pow3(vec3 v, float ex)\n"\

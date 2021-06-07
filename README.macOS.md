@@ -61,8 +61,12 @@ Window can now be created, and then program immediately crashes with a bad acces
 
 `GpDisplayDriver_SDL_GL2::DrawQuadProgram::Link` fails when `pixelShader` is unexpectedly null. It now exits early in that case.
 
+### Shader language level issues
+
 Almost all of the shaders currently fail to compile, probably due to GLSL language level differences on macOS:
 
 ```
 g_copyQuadP_GL2: ERROR: 0:1: 'precision' : syntax error: syntax error
 ```
+
+Replacing `GP_GL_SHADER_CODE_MEDIUM_PRECISION_PREFIX` and `GP_GL_SHADER_CODE_HIGH_PRECISION_PREFIX` with empty strings gets us far enough to crash on a font-related error.
